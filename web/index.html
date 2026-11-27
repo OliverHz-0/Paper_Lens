@@ -4,58 +4,94 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PaperLens — 论文深度解剖、课题管理与文献汇报 PPT 工作台</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111318'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='14' cy='14' r='7'/%3E%3Cpath d='m19.5 19.5 5 5'/%3E%3C/g%3E%3C/svg%3E" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <div id="app" class="app-shell">
+    <!-- Icon sprite (stroke icons, 24px grid) -->
+    <svg class="icon-sprite" aria-hidden="true" focusable="false">
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+      <symbol id="i-lens" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/><path d="M7.75 9h5.5M7.75 12h3.5"/></symbol>
+      <symbol id="i-overview" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></symbol>
+      <symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M8 13h8M8 17h8M8 9h2"/></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></symbol>
+      <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+      <symbol id="i-compare" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/></symbol>
+      <symbol id="i-slides" viewBox="0 0 24 24"><path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/></symbol>
+      <symbol id="i-library" viewBox="0 0 24 24"><path d="m16 6 4 14M12 6v14M8 8v12M4 4v16"/></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+      <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+    </svg>
+
     <!-- Top Header -->
     <header class="topbar">
       <div class="topbar-left">
-        <button id="btnToggleSidebar" class="btn btn-ghost btn-sm" title="展开/收起课题侧边栏">☰ 课题栏</button>
+        <button id="btnToggleSidebar" class="icon-btn" type="button" aria-label="展开/收起课题栏" title="展开/收起课题栏" aria-controls="topicSidebar">
+          <svg class="ic"><use href="#i-menu"/></svg>
+        </button>
         <div class="brand">
-          <span class="brand-icon">🔬</span>
-          <div class="brand-text">
-            <strong>PaperLens</strong>
-            <span>论文解读与汇报工作台</span>
-          </div>
+          <span class="brand-mark" aria-hidden="true"><svg class="ic"><use href="#i-lens"/></svg></span>
+          <strong class="brand-name">PaperLens</strong>
         </div>
         <div class="paper-picker-wrap">
-          <select id="paperSelect" class="paper-select" title="切换论文"></select>
+          <select id="paperSelect" class="paper-select" aria-label="切换论文" title="切换论文"></select>
         </div>
       </div>
 
-      <nav class="nav-tabs" role="tablist">
-        <button class="nav-tab active" data-tab="overview">
-          <span class="tab-ic">🧭</span> 六大维度总览
+      <nav class="nav-tabs" role="tablist" aria-label="工作台视图">
+        <button class="nav-tab active" data-tab="overview" role="tab" aria-selected="true" title="六大维度总览">
+          <svg class="ic"><use href="#i-overview"/></svg> 总览
         </button>
-        <button class="nav-tab" data-tab="slices">
-          <span class="tab-ic">📑</span> 逐段切片精读 <span id="sliceCountBadge" class="badge">0</span>
+        <button class="nav-tab" data-tab="slices" role="tab" aria-selected="false" title="逐段切片精读">
+          <svg class="ic"><use href="#i-file"/></svg> 逐段精读 <span id="sliceCountBadge" class="badge">0</span>
         </button>
-        <button class="nav-tab" data-tab="glossary">
-          <span class="tab-ic">💡</span> 术语库 <span id="glossaryCountBadge" class="badge">0</span>
+        <button class="nav-tab" data-tab="glossary" role="tab" aria-selected="false" title="术语库">
+          <svg class="ic"><use href="#i-book"/></svg> 术语库 <span id="glossaryCountBadge" class="badge">0</span>
         </button>
-        <button class="nav-tab" data-tab="resources">
-          <span class="tab-ic">🔗</span> 关联资源 <span id="resCountBadge" class="badge">0</span>
+        <button class="nav-tab" data-tab="resources" role="tab" aria-selected="false" title="关联资源">
+          <svg class="ic"><use href="#i-link"/></svg> 资源 <span id="resCountBadge" class="badge">0</span>
         </button>
-        <button class="nav-tab" data-tab="compare">
-          <span class="tab-ic">⚖️</span> 文章对比关联
+        <button class="nav-tab" data-tab="compare" role="tab" aria-selected="false" title="文章对比关联">
+          <svg class="ic"><use href="#i-compare"/></svg> 对比
         </button>
-        <button class="nav-tab nav-tab-ppt" data-tab="ppt">
-          <span class="tab-ic">📽️</span> 文献汇报 PPT
+        <button class="nav-tab" data-tab="ppt" role="tab" aria-selected="false" title="文献汇报 PPT">
+          <svg class="ic"><use href="#i-slides"/></svg> 汇报 PPT
         </button>
       </nav>
 
       <div class="topbar-right">
         <label class="beginner-toggle" title="突出显示零基础大白话翻译与生活化类比">
           <input type="checkbox" id="beginnerToggle" checked />
-          <span class="toggle-pill"></span>
+          <span class="toggle-pill" aria-hidden="true"></span>
           <span class="toggle-label">大白话</span>
         </label>
-        <button id="btnZoteroTop" class="btn btn-secondary btn-sm" title="连接 Zotero / MCP 导入已下载文献">📚 Zotero</button>
-        <button id="btnUpload" class="btn btn-primary btn-sm">＋ 上传 PDF</button>
-        <button id="btnExport" class="btn btn-ghost btn-sm" title="导出完整 Markdown 报告">导出 MD</button>
-        <button id="btnSettings" class="btn btn-ghost btn-sm" title="LLM、Zotero MCP 与代理设置">⚙️</button>
-        <button id="btnTheme" class="btn btn-ghost btn-sm" title="切换明暗主题">🌓</button>
+        <button id="btnUpload" class="btn btn-primary btn-sm" type="button">
+          <svg class="ic"><use href="#i-upload"/></svg><span class="btn-label">上传 PDF</span>
+        </button>
+        <button id="btnMoreActions" class="icon-btn more-toggle" type="button" aria-label="更多操作" aria-expanded="false" aria-controls="secondaryActions">
+          <svg class="ic"><use href="#i-more"/></svg>
+        </button>
+        <div id="secondaryActions" class="secondary-actions">
+          <button id="btnZoteroTop" class="icon-btn" type="button" aria-label="从 Zotero 导入" title="从 Zotero / MCP 导入已下载文献">
+            <svg class="ic"><use href="#i-library"/></svg><span class="menu-label">从 Zotero 导入</span>
+          </button>
+          <button id="btnExport" class="icon-btn" type="button" aria-label="导出 Markdown 报告" title="导出完整 Markdown 报告">
+            <svg class="ic"><use href="#i-download"/></svg><span class="menu-label">导出 Markdown</span>
+          </button>
+          <button id="btnSettings" class="icon-btn" type="button" aria-label="设置" title="模型、Zotero 与代理设置">
+            <svg class="ic"><use href="#i-settings"/></svg><span class="menu-label">设置</span>
+          </button>
+          <button id="btnTheme" class="icon-btn" type="button" aria-label="切换明暗主题" title="切换明暗主题">
+            <svg class="ic"><use href="#i-moon"/></svg><span class="menu-label">明暗主题</span>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -64,8 +100,8 @@
       <!-- Left Collapsible Topic Sidebar -->
       <aside id="topicSidebar" class="topic-sidebar" aria-label="课题文献侧边栏">
         <div class="sidebar-head">
-          <strong>📂 研究课题管理</strong>
-          <button id="btnNewTopic" class="btn btn-primary btn-xs">＋ 新建课题</button>
+          <strong><svg class="ic"><use href="#i-folder"/></svg>研究课题</strong>
+          <button id="btnNewTopic" class="btn btn-ghost btn-xs" type="button"><svg class="ic"><use href="#i-plus"/></svg>新建</button>
         </div>
 
         <!-- Inline New Topic Form -->
@@ -73,12 +109,12 @@
           <input id="newTopicName" type="text" placeholder="输入课题名称（如：抗结核肽）" />
           <input id="newTopicDesc" type="text" placeholder="课题简介（可选）" />
           <div class="color-dots" id="newTopicColors">
-            <button type="button" class="cdot active" data-color="teal" style="background:#0f766e"></button>
-            <button type="button" class="cdot" data-color="blue" style="background:#2563eb"></button>
-            <button type="button" class="cdot" data-color="amber" style="background:#d97706"></button>
-            <button type="button" class="cdot" data-color="purple" style="background:#7c3aed"></button>
-            <button type="button" class="cdot" data-color="emerald" style="background:#059669"></button>
-            <button type="button" class="cdot" data-color="rose" style="background:#be123c"></button>
+            <button type="button" class="cdot active" data-color="teal" style="background:#2a9d99"></button>
+            <button type="button" class="cdot" data-color="blue" style="background:#62aef0"></button>
+            <button type="button" class="cdot" data-color="amber" style="background:#dd5b00"></button>
+            <button type="button" class="cdot" data-color="purple" style="background:#d6b6f6"></button>
+            <button type="button" class="cdot" data-color="emerald" style="background:#1aae39"></button>
+            <button type="button" class="cdot" data-color="rose" style="background:#ff64c8"></button>
           </div>
           <div style="display:flex;gap:6px;justify-content:flex-end">
             <button id="btnCancelNewTopic" type="button" class="btn btn-ghost btn-xs">取消</button>
@@ -120,7 +156,7 @@
           <div class="slices-toolbar">
             <div id="sectionFilters" class="filter-chips"></div>
             <div class="slices-controls">
-              <button id="btnToggleDockedMindmap" class="btn btn-secondary btn-sm" title="在左侧展开或收起思维导图导航分栏">🗺️ 导图分栏</button>
+              <button id="btnToggleDockedMindmap" class="btn btn-secondary btn-sm" title="在左侧展开或收起思维导图导航分栏">导图分栏</button>
               <input id="sliceSearch" type="search" class="search-input" placeholder="搜索段落关键词、图号、术语..." />
               <div class="display-mode-group">
                 <button class="mode-btn active" data-display="both">截图 + 双语</button>
@@ -153,27 +189,28 @@
 
   <!-- Slide-Over Right Drawer: Real-Time Citation Tracer & Term Inspector -->
   <div id="drawerOverlay" class="drawer-overlay hidden"></div>
+  <div id="sidebarScrim" class="sidebar-scrim" aria-hidden="true"></div>
   <aside id="sideDrawer" class="side-drawer hidden" aria-label="实时溯源抽屉">
     <div class="drawer-header">
       <div id="drawerTitle" class="drawer-title">实时引文溯源</div>
-      <button id="drawerClose" class="icon-close">✕</button>
+      <button id="drawerClose" class="icon-close" type="button" aria-label="关闭"><svg class="ic"><use href="#i-x"/></svg></button>
     </div>
     <div id="drawerBody" class="drawer-body"></div>
   </aside>
 
   <!-- Modal: Upload PDF -->
   <div id="uploadModal" class="modal-backdrop hidden">
-    <div class="modal-card">
+    <div role="dialog" aria-modal="true" class="modal-card">
       <div class="modal-header">
-        <h3>上传任意学术论文 PDF</h3>
-        <button class="icon-close" data-close-modal="uploadModal">✕</button>
+        <h3>上传论文 PDF</h3>
+        <button class="icon-close" type="button" data-close-modal="uploadModal" aria-label="关闭"><svg class="ic"><use href="#i-x"/></svg></button>
       </div>
       <div class="modal-body">
         <div id="dropZone" class="drop-zone">
-          <div class="drop-icon">📄</div>
+          <div class="drop-icon"><svg class="ic"><use href="#i-upload"/></svg></div>
           <p class="drop-title">将论文 PDF 拖到这里，或点击选择文件</p>
           <p class="drop-sub">自动完成：双栏逐段精准切图 · 图表裁切 · 参考文献提取 · GitHub/SI 自动抓取 · AI 零基础解读</p>
-          <input id="pdfFileInput" type="file" accept="application/pdf,.pdf" hidden />
+          <input id="pdfFileInput" type="file" aria-label="选择 PDF 文件" accept="application/pdf,.pdf" hidden />
           <button id="pickPdfBtn" class="btn btn-primary">选择 PDF 文件</button>
         </div>
         <div class="upload-options">
@@ -201,16 +238,16 @@
 
   <!-- Modal: Zotero / Zotero MCP Importer -->
   <div id="zoteroModal" class="modal-backdrop hidden">
-    <div class="modal-card modal-wide">
+    <div role="dialog" aria-modal="true" class="modal-card modal-wide">
       <div class="modal-header">
-        <h3>📚 连接 Zotero / Zotero MCP 导入已下载文献</h3>
-        <button class="icon-close" data-close-modal="zoteroModal">✕</button>
+        <h3>从 Zotero 导入</h3>
+        <button class="icon-close" type="button" data-close-modal="zoteroModal" aria-label="关闭"><svg class="ic"><use href="#i-x"/></svg></button>
       </div>
       <div class="modal-body">
         <div id="zoteroConnBanner" class="zotero-conn-banner"></div>
 
         <details class="zotero-mcp-config">
-          <summary>🔌 Zotero MCP 高级连接配置（支持 stdio MCP 握手与本地目录自定义）</summary>
+          <summary>高级：Zotero MCP 连接</summary>
           <div class="mcp-form-row">
             <input id="zoteroMcpCmdInput" type="text" placeholder="Zotero MCP 启动命令，例如：uvx zotero-mcp 或 zotero-mcp" />
             <button id="btnProbeZoteroMcp" class="btn btn-secondary btn-sm">测试 MCP 连接</button>
@@ -236,12 +273,12 @@
             <select id="zoteroTargetTopic" class="paper-select" style="max-width:260px"></select>
             <label class="checkbox-row">
               <input type="checkbox" id="zoteroRunLlm" checked />
-              <span>导入后自动用 Gemini 4 Neon (agy) 深度解读</span>
+              <span>导入后自动运行 AI 深度解读（使用设置中的模型）</span>
             </label>
           </div>
           <div style="display:flex;align-items:center;gap:10px">
             <span id="zoteroSelectedCount" style="font-size:13px;font-weight:700;color:var(--primary)">已选 0 篇</span>
-            <button id="btnDoZoteroImport" class="btn btn-primary" disabled>📥 一键导入并解析</button>
+            <button id="btnDoZoteroImport" class="btn btn-primary" disabled>导入并解析</button>
           </div>
         </div>
 
@@ -260,16 +297,16 @@
 
   <!-- Modal: Settings (LLM, Zotero & Proxy) -->
   <div id="settingsModal" class="modal-backdrop hidden">
-    <div class="modal-card">
+    <div role="dialog" aria-modal="true" class="modal-card">
       <div class="modal-header">
-        <h3>模型、Zotero MCP 与网络配置</h3>
-        <button class="icon-close" data-close-modal="settingsModal">✕</button>
+        <h3>设置</h3>
+        <button class="icon-close" type="button" data-close-modal="settingsModal" aria-label="关闭"><svg class="ic"><use href="#i-x"/></svg></button>
       </div>
       <div class="modal-body">
-        <p class="hint-text">点下方一键切换引擎（已默认打通你本机的官方 <code>agy</code> CLI · <strong>Gemini 4 Neon 免 Key 直用</strong>）：</p>
+        <p class="hint-text">选一个预设快速填入，或在下方手动配置。</p>
         <div id="llmPresetBar" class="filter-chips" style="margin-bottom:12px">
-          <button type="button" class="chip active" data-llm-preset="agy_neon">⚡ Antigravity · Gemini 4 Neon (免 Key 推荐)</button>
-          <button type="button" class="chip" data-llm-preset="agy_flash">⚡ Antigravity · Gemini 3.8 Flash (极速)</button>
+          <button type="button" class="chip active" data-llm-preset="agy_neon">Antigravity · Gemini 4 Neon（免 Key）</button>
+          <button type="button" class="chip" data-llm-preset="agy_flash">Antigravity · Gemini 3.8 Flash</button>
           <button type="button" class="chip" data-llm-preset="deepseek">DeepSeek API</button>
           <button type="button" class="chip" data-llm-preset="gemini">Google Gemini API</button>
           <button type="button" class="chip" data-llm-preset="qwen">通义千问 Qwen</button>
@@ -279,8 +316,8 @@
           <label class="form-field">
             <span>调用引擎类型</span>
             <select id="cfgProvider" class="paper-select" style="max-width:100%">
-              <option value="agy_cli">⚡ 本机 Antigravity CLI (agy · 免 API Key 直调 Gemini 4 Neon)</option>
-              <option value="openai_compatible">🌐 OpenAI 兼容 HTTP API (DeepSeek / Gemini API / Qwen / OpenAI / Ollama)</option>
+              <option value="agy_cli">本机 Antigravity CLI（agy，免 API Key）</option>
+              <option value="openai_compatible">OpenAI 兼容 HTTP API（DeepSeek / Gemini / Qwen / OpenAI / Ollama）</option>
             </select>
           </label>
           <label class="form-field">
@@ -314,34 +351,31 @@
         </div>
         <div class="modal-actions">
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button id="btnTestLlm" class="btn btn-ghost">🔌 测试连通性</button>
-            <button id="btnRunLlmCurrent" class="btn btn-secondary">✨ 解读当前论文</button>
+            <button id="btnTestLlm" class="btn btn-ghost">测试连通性</button>
+            <button id="btnRunLlmCurrent" class="btn btn-secondary">解读当前论文</button>
           </div>
           <button id="btnSaveConfig" class="btn btn-primary">保存配置</button>
         </div>
         <div id="settingsToast" class="toast-inline hidden"></div>
-        <div style="margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--teal-soft);font-size:12px;color:var(--text)">
-          <strong>⚡ 免 Key 直连说明：</strong>
-          选择 <code>Antigravity CLI (agy)</code> 后，上传 PDF 或从 Zotero 导入论文时，PaperLens 后端会直接调用你电脑上已登录的官方 <code>agy -p --model gemini-4-neon-high</code> 在后台自动完成全套深度解剖，无需任何外部 API Key！
-        </div>
+        <p class="hint-text settings-note">使用 Antigravity CLI 时，PaperLens 会调用本机已登录的 <code>agy</code> 完成解读，不需要 API Key。</p>
       </div>
     </div>
   </div>
 
   <!-- Embedded Official PPT-Master SVG Editor Modal -->
   <div id="svgEditorModal" class="modal-backdrop hidden">
-    <div class="modal-card" style="width:min(1320px,97vw);height:92vh;display:flex;flex-direction:column">
+    <div role="dialog" aria-modal="true" class="modal-card" style="width:min(1320px,97vw);height:92vh;display:flex;flex-direction:column">
       <div class="modal-header">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <h3>🎨 PPT-Master 官方可视化 SVG 编辑器（直接编辑 svg_output/）</h3>
+          <h3>SVG 编辑器</h3>
           <a id="svgEditorExternalLink" href="#" target="_blank" class="btn btn-ghost btn-xs">新窗口打开 ↗</a>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
-          <button id="btnRecompileAfterEdit" class="btn btn-primary btn-sm">🔄 重新质检并编译 .pptx</button>
-          <button class="icon-close" data-close-modal="svgEditorModal">✕</button>
+          <button id="btnRecompileAfterEdit" class="btn btn-primary btn-sm">重新质检并编译 .pptx</button>
+          <button class="icon-close" type="button" data-close-modal="svgEditorModal" aria-label="关闭"><svg class="ic"><use href="#i-x"/></svg></button>
         </div>
       </div>
-      <iframe id="svgEditorIframe" src="about:blank" style="flex:1;width:100%;border:none;background:#f8fafc"></iframe>
+      <iframe id="svgEditorIframe" src="about:blank" style="flex:1;width:100%;border:none;background:#ffffff"></iframe>
     </div>
   </div>
 
@@ -350,10 +384,10 @@
     <div class="present-topbar">
       <span id="presentCounter">1 / 10</span>
       <div style="display:flex;gap:8px">
-        <button id="presentToggleNotes" class="btn btn-ghost btn-sm">📝 演讲备注</button>
+        <button id="presentToggleNotes" class="btn btn-ghost btn-sm">演讲备注</button>
         <button id="presentPrev" class="btn btn-ghost btn-sm">← 上一页</button>
         <button id="presentNext" class="btn btn-primary btn-sm">下一页 →</button>
-        <button id="presentExit" class="btn btn-ghost btn-sm">✕ 退出 (ESC)</button>
+        <button id="presentExit" class="btn btn-ghost btn-sm">退出 (Esc)</button>
       </div>
     </div>
     <div id="presentStage" class="present-stage"></div>
@@ -362,9 +396,9 @@
 
   <!-- Full-Screen Image Lightbox -->
   <div id="lightbox" class="lightbox hidden">
-    <button id="lightboxClose" class="lightbox-close">✕ 关闭放大视图</button>
+    <button id="lightboxClose" class="lightbox-close">关闭</button>
     <div class="lightbox-inner">
-      <img id="lightboxImg" src="" alt="zoomed preview" />
+      <img id="lightboxImg" alt="放大预览" />
       <p id="lightboxCaption" class="lightbox-caption"></p>
     </div>
   </div>

@@ -2,14 +2,14 @@
  * compare.js — Cross-Paper Comparison & Relationship Synthesis Workspace
  */
 
-const PAPER_PALETTE = ["#2563eb", "#0f766e", "#d97706", "#7c3aed", "#be123c", "#0284c7"];
+const PAPER_PALETTE = ["#62aef0", "#2a9d99", "#dd5b00", "#d6b6f6", "#ff64c8", "#1aae39"];
 
 const REL_TYPE_COLOR = {
-  方法互补: "#059669",
-  技术演进: "#2563eb",
-  范式分歧: "#d97706",
-  靶标重叠: "#0f766e",
-  证据互印: "#7c3aed",
+  方法互补: "#1aae39",
+  技术演进: "#62aef0",
+  范式分歧: "#dd5b00",
+  靶标重叠: "#2a9d99",
+  证据互印: "#d6b6f6",
 };
 
 export function createCompareController(ctx) {
@@ -107,7 +107,7 @@ export function createCompareController(ctx) {
         const a = coords[rel.from_paper];
         const b = coords[rel.to_paper];
         if (!a || !b) return "";
-        const col = REL_TYPE_COLOR[rel.relation_type] || "#2563eb";
+        const col = REL_TYPE_COLOR[rel.relation_type] || "#62aef0";
         const isAct = idx === cmp.activeRelIdx;
         // Slightly curved quadratic edge offset from center for readability
         const mx = (a.x + b.x) / 2;
@@ -173,9 +173,8 @@ export function createCompareController(ctx) {
     if (!report || !report.deterministic) {
       return `
         <div class="dim-card" style="text-align:center;padding:38px 24px">
-          <div style="font-size:36px;margin-bottom:8px">⚖️</div>
-          <h3 style="margin:0 0 8px">勾选上方同一方向下的 2 篇及以上论文开始对比</h3>
-          <p style="margin:0;color:var(--text-muted);font-size:14px">支持「⚡ 0 秒瞬时并排对比（六大维度 + 共同引文/工具图谱）」与「✨ Gemini 4 Neon 跨文深度对比与融合创新挖掘」。</p>
+                    <h3 style="margin:0 0 8px">勾选上方同一方向下的 2 篇及以上论文开始对比</h3>
+          <p style="margin:0;color:var(--text-muted);font-size:14px">「并排对比」会立刻对齐六大维度与共同引文；「AI 深度对比」会进一步生成关联图谱、流派差异和下一步课题建议。</p>
         </div>
       `;
     }
@@ -191,22 +190,22 @@ export function createCompareController(ctx) {
         <div class="dim-card" style="margin-bottom:18px">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px">
             <div>
-              <span class="meta-pill accent">✨ Gemini 跨文深度对比与关联挖掘</span>
-              ${report.topic_name ? `<span class="meta-pill" style="margin-left:6px">📂 ${esc(report.topic_name)}</span>` : ""}
-              <h2 style="margin:8px 0 0;font-size:21px">${esc(report.title || syn.title || "多文对比分析")}</h2>
+              <span class="meta-pill accent">AI 深度对比</span>
+              ${report.topic_name ? `<span class="meta-pill" style="margin-left:6px">${esc(report.topic_name)}</span>` : ""}
+              <h2 style="margin:8px 0 0;font-size:22px">${esc(report.title || syn.title || "多文对比分析")}</h2>
             </div>
             ${
               report.id
                 ? `<div style="display:flex;gap:8px">
-                    <button id="btnExportCmpMd" class="btn btn-secondary btn-sm">📥 导出对比综述 MD</button>
+                    <button id="btnExportCmpMd" class="btn btn-secondary btn-sm">导出对比综述 MD</button>
                   </div>`
                 : ""
             }
           </div>
-          <div class="hero-tldr"><strong>📌 全景定位：</strong>${esc(syn.synthesis_headline || "")}</div>
+          <div class="hero-tldr"><strong>全景定位：</strong>${esc(syn.synthesis_headline || "")}</div>
           ${
             syn.beginner_analogy
-              ? `<div class="hero-beginner-hook beginner-only"><strong>🎓 零基础大白话流派对决：</strong>${esc(syn.beginner_analogy)}</div>`
+              ? `<div class="hero-beginner-hook beginner-only"><strong>零基础大白话流派对决：</strong>${esc(syn.beginner_analogy)}</div>`
               : ""
           }
           ${
@@ -214,16 +213,16 @@ export function createCompareController(ctx) {
               ? `<div class="cmp-roles-grid">
                   ${syn.paper_roles
                     .map((pr) => {
-                      const pm = pmap[pr.paper_id] || { short_label: "P?", title_zh: pr.paper_id, color: "#2563eb" };
+                      const pm = pmap[pr.paper_id] || { short_label: "P?", title_zh: pr.paper_id, color: "#62aef0" };
                       return `
                         <div class="cmp-role-card" style="border-top:4px solid ${pm.color}">
                           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
                             <span class="meta-pill" style="background:${pm.color};color:#fff">${esc(pm.short_label)} · ${esc(pr.archetype || "")}</span>
                             <button class="link-btn" data-jump-paper="${esc(pr.paper_id)}">精读原文 ↗</button>
                           </div>
-                          <div style="font-weight:700;font-size:13.5px;margin-bottom:8px;line-height:1.35">${esc(pm.title_zh)}</div>
-                          <div style="font-size:12.5px;margin-bottom:5px"><strong style="color:var(--teal)">✓ 核心优势：</strong>${esc(pr.core_edge || "")}</div>
-                          <div style="font-size:12.5px;color:var(--text-muted)"><strong style="color:var(--rose)">△ 主要短板：</strong>${esc(pr.main_gap || "")}</div>
+                          <div style="font-weight:700;font-size:14px;margin-bottom:8px;line-height:1.35">${esc(pm.title_zh)}</div>
+                          <div style="font-size:14px;margin-bottom:5px"><strong style="color:var(--teal)">✓ 核心优势：</strong>${esc(pr.core_edge || "")}</div>
+                          <div style="font-size:14px;color:var(--text-muted)"><strong style="color:var(--rose)">△ 主要短板：</strong>${esc(pr.main_gap || "")}</div>
                         </div>
                       `;
                     })
@@ -236,9 +235,9 @@ export function createCompareController(ctx) {
       : `
         <div class="dim-card" style="margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
           <div>
-            <span class="meta-pill accent">⚡ 瞬时结构化对比模式</span>
+            <span class="meta-pill accent">并排对比</span>
             <h3 style="margin:6px 0 4px">已并排对齐 ${papers.length} 篇论文的六大维度与实证共享线索</h3>
-            <p style="margin:0;font-size:13px;color:var(--text-muted)">点击上方「✨ 用 Gemini 4 Neon 深度对比与关联挖掘」可进一步生成流派关联图谱、互补/分歧剖析与新课题 Idea。</p>
+            <p style="margin:0;font-size:14px;color:var(--text-muted)">点击上方「AI 深度对比」可进一步生成流派关联图谱、互补/分歧剖析与新课题 Idea。</p>
           </div>
         </div>
       `;
@@ -253,7 +252,7 @@ export function createCompareController(ctx) {
           <div class="dim-header">
             <div class="dim-title-group">
               <span class="dim-num">GRAPH</span>
-              <h3>🕸️ 论文间深层关联网络图（点击连线查看解析 · 点击论文节点跳转精读）</h3>
+              <h3>论文间深层关联网络图</h3>
             </div>
           </div>
           <div class="cmp-graph-layout">
@@ -265,17 +264,17 @@ export function createCompareController(ctx) {
               <div style="display:flex;flex-direction:column;gap:8px">
                 ${rels
                   .map((r, i) => {
-                    const a = pmap[r.from_paper] || { short_label: r.from_paper, color: "#2563eb" };
-                    const b = pmap[r.to_paper] || { short_label: r.to_paper, color: "#0f766e" };
-                    const col = REL_TYPE_COLOR[r.relation_type] || "#2563eb";
+                    const a = pmap[r.from_paper] || { short_label: r.from_paper, color: "#62aef0" };
+                    const b = pmap[r.to_paper] || { short_label: r.to_paper, color: "#2a9d99" };
+                    const col = REL_TYPE_COLOR[r.relation_type] || "#62aef0";
                     const isAct = i === cmp.activeRelIdx;
                     return `
-                      <div class="cmp-rel-item ${isAct ? "active" : ""}" data-select-rel="${i}" style="border-left:4px solid ${col}">
+                      <div class="cmp-rel-item ${isAct ? "active" : ""}" data-select-rel="${i}" style="--rel-c:${col}">
                         <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:4px;flex-wrap:wrap">
-                          <strong style="font-size:13px">${esc(a.short_label)} ↔ ${esc(b.short_label)} · ${esc(r.label || "")}</strong>
-                          <span class="meta-pill" style="background:${col}1f;color:${col}">${esc(r.relation_type || "关联")}</span>
+                          <strong style="font-size:14px">${esc(a.short_label)} ↔ ${esc(b.short_label)} · ${esc(r.label || "")}</strong>
+                          <span class="meta-pill" style="background:${col}24;color:var(--text-secondary)">${esc(r.relation_type || "关联")}</span>
                         </div>
-                        <div style="font-size:12.5px;color:var(--text);line-height:1.55">${esc(r.explanation || "")}</div>
+                        <div style="font-size:14px;color:var(--text);line-height:1.55">${esc(r.explanation || "")}</div>
                       </div>
                     `;
                   })
@@ -303,12 +302,12 @@ export function createCompareController(ctx) {
                     <span class="meta-pill" style="background:${PAPER_PALETTE[i % PAPER_PALETTE.length]};color:#fff">${esc(p.short_label)}</span>
                     <button class="link-btn" data-jump-paper="${esc(p.paper_id)}">打开 ↗</button>
                   </div>
-                  <div style="font-size:12.5px;font-weight:700;line-height:1.35">${esc(p.title_zh)}</div>
+                  <div style="font-size:14px;font-weight:700;line-height:1.35">${esc(p.title_zh)}</div>
                 </th>
               `
                 )
                 .join("")}
-              <th style="width:210px">💡 横向洞察</th>
+              <th style="width:210px">横向洞察</th>
             </tr>
           </thead>
           <tbody>
@@ -341,7 +340,7 @@ export function createCompareController(ctx) {
                     <span class="meta-pill" style="background:${PAPER_PALETTE[i % PAPER_PALETTE.length]};color:#fff">${esc(p.short_label)}</span>
                     <button class="link-btn" data-jump-paper="${esc(p.paper_id)}">打开 ↗</button>
                   </div>
-                  <div style="font-size:12.5px;font-weight:700;line-height:1.35">${esc(p.title_zh)}</div>
+                  <div style="font-size:14px;font-weight:700;line-height:1.35">${esc(p.title_zh)}</div>
                 </th>
               `
                 )
@@ -361,7 +360,7 @@ export function createCompareController(ctx) {
                       <div>${esc(cell.summary || "")}</div>
                       ${
                         cell.analogy
-                          ? `<div class="beginner-only" style="margin-top:6px;padding:6px 8px;border-radius:7px;background:var(--amber-bg);font-size:12px"><strong>💡 类比：</strong>${esc(cell.analogy)}</div>`
+                          ? `<div class="beginner-only" style="margin-top:6px;padding:6px 8px;border-radius:5px;background:var(--amber-bg);font-size:12px"><strong>类比：</strong>${esc(cell.analogy)}</div>`
                           : ""
                       }
                     </td>`;
@@ -380,11 +379,11 @@ export function createCompareController(ctx) {
         <div class="dim-header">
           <div class="dim-title-group">
             <span class="dim-num">MATRIX</span>
-            <h3>📊 多维度横向对比矩阵</h3>
+            <h3>多维度横向对比矩阵</h3>
           </div>
           <div class="display-mode-group">
-            ${syn?.comparison_matrix?.length ? `<button class="mode-btn ${showAiMatrix ? "active" : ""}" data-matrix-view="ai">✨ AI 精炼维表</button>` : ""}
-            <button class="mode-btn ${!showAiMatrix ? "active" : ""}" data-matrix-view="raw6">📋 六大维度并排</button>
+            ${syn?.comparison_matrix?.length ? `<button class="mode-btn ${showAiMatrix ? "active" : ""}" data-matrix-view="ai">AI 精炼维表</button>` : ""}
+            <button class="mode-btn ${!showAiMatrix ? "active" : ""}" data-matrix-view="raw6">六大维度并排</button>
           </div>
         </div>
         <div class="cmp-table-wrap">${matrixTableHtml}</div>
@@ -396,13 +395,13 @@ export function createCompareController(ctx) {
       ? `
         <div class="cmp-two-col" style="margin-bottom:18px">
           <div class="dim-card" style="border-top:4px solid var(--teal)">
-            <h3 style="margin:0 0 10px;color:var(--teal)">🔀 互补融合机会（如何强强联合？）</h3>
+            <h3 style="margin:0 0 10px;color:var(--teal)">互补融合机会（如何强强联合？）</h3>
             <ul class="dim-bullets" style="margin:0">
               ${(syn.complementarities || []).map((c) => `<li>${esc(c)}</li>`).join("")}
             </ul>
           </div>
           <div class="dim-card" style="border-top:4px solid var(--amber-border)">
-            <h3 style="margin:0 0 10px;color:var(--amber)">⚡ 核心分歧与范式张力</h3>
+            <h3 style="margin:0 0 10px;color:var(--amber)">核心分歧与范式张力</h3>
             <ul class="dim-bullets" style="margin:0">
               ${(syn.contradictions_or_tensions || []).map((c) => `<li>${esc(c)}</li>`).join("")}
             </ul>
@@ -415,7 +414,7 @@ export function createCompareController(ctx) {
                 <div class="dim-header">
                   <div class="dim-title-group">
                     <span class="dim-num">IDEAS</span>
-                    <h3>🚀 基于对比空白区的下一步课题创新切入点</h3>
+                    <h3>下一步课题切入点</h3>
                   </div>
                 </div>
                 <div class="cmp-ideas-grid">
@@ -425,12 +424,12 @@ export function createCompareController(ctx) {
                     <div class="cmp-idea-card">
                       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
                         <span class="wf-num" style="margin:0">${idx + 1}</span>
-                        <strong style="font-size:14.5px">${esc(idea.title || "")}</strong>
+                        <strong style="font-size:15px">${esc(idea.title || "")}</strong>
                       </div>
-                      <p style="margin:0 0 8px;font-size:13px;line-height:1.55">${esc(idea.rationale || "")}</p>
+                      <p style="margin:0 0 8px;font-size:14px;line-height:1.55">${esc(idea.rationale || "")}</p>
                       ${
                         idea.how_to_start
-                          ? `<div style="padding:8px 10px;border-radius:8px;background:var(--teal-soft);font-size:12.5px"><strong style="color:var(--teal)">🧪 第一步验证路径：</strong>${esc(idea.how_to_start)}</div>`
+                          ? `<div style="padding:8px 10px;border-radius:8px;background:var(--teal-soft);font-size:14px"><strong style="color:var(--teal)">第一步验证路径：</strong>${esc(idea.how_to_start)}</div>`
                           : ""
                       }
                     </div>
@@ -450,7 +449,7 @@ export function createCompareController(ctx) {
         <div class="dim-header">
           <div class="dim-title-group">
             <span class="dim-num">LINKS</span>
-            <h3>🔎 客观实证关联线索（共同引文 · 直接互引 · 共享术语/工具）</h3>
+            <h3>客观实证关联线索（共同引文 · 直接互引 · 共享术语/工具）</h3>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <span class="meta-pill accent">共同引文 ${det.shared_references?.length || 0} 篇</span>
@@ -462,7 +461,7 @@ export function createCompareController(ctx) {
         ${
           (det.direct_citations || []).length
             ? `<div style="margin-bottom:14px">
-                <div style="font-size:13px;font-weight:700;margin-bottom:6px">➡️ 直接引用传承关系：</div>
+                <div style="font-size:14px;font-weight:700;margin-bottom:6px">直接引用传承关系：</div>
                 ${det.direct_citations
                   .map((dc) => {
                     const a = pmap[dc.from_paper]?.short_label || dc.from_paper;
@@ -477,7 +476,7 @@ export function createCompareController(ctx) {
         ${
           (det.shared_concepts || []).length
             ? `<div style="margin-bottom:14px">
-                <div style="font-size:13px;font-weight:700;margin-bottom:8px">🧩 跨论文共享术语、模型与数据库：</div>
+                <div style="font-size:14px;font-weight:700;margin-bottom:8px">跨论文共享术语、模型与数据库：</div>
                 <div style="display:flex;flex-wrap:wrap;gap:7px">
                   ${det.shared_concepts
                     .map(
@@ -494,7 +493,7 @@ export function createCompareController(ctx) {
         }
 
         <div>
-          <div style="font-size:13px;font-weight:700;margin-bottom:8px">📚 共同引用的基石参考文献（Bibliographic Coupling）：</div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:8px">共同引用的基石参考文献（Bibliographic Coupling）：</div>
           ${
             (det.shared_references || []).length
               ? `<div class="ref-index-list">
@@ -516,7 +515,7 @@ export function createCompareController(ctx) {
                     )
                     .join("")}
                 </div>`
-              : `<p style="font-size:13px;color:var(--text-muted);margin:0">所选论文的参考文献列表中暂无完全重合的条目（可能分别来自不同细分年份或子领域，可参考上方 AI 挖掘的方法与概念深层关联）。</p>`
+              : `<p style="font-size:14px;color:var(--text-muted);margin:0">所选论文的参考文献列表中暂无完全重合的条目（可能分别来自不同细分年份或子领域，可参考上方 AI 挖掘的方法与概念深层关联）。</p>`
           }
         </div>
       </div>
@@ -537,13 +536,13 @@ export function createCompareController(ctx) {
       `<button class="chip ${cmp.topicFilter === "all" ? "active" : ""}" data-cmp-topic="all">全部论文 (${allCount})</button>`,
       ...topics.map((t) => {
         const cnt = (t.paper_ids || []).filter((pid) => (state.papers || []).some((p) => p.paper_id === pid)).length;
-        return `<button class="chip ${cmp.topicFilter === t.id ? "active" : ""}" data-cmp-topic="${esc(t.id)}">📂 ${esc(t.name)} (${cnt})</button>`;
+        return `<button class="chip ${cmp.topicFilter === t.id ? "active" : ""}" data-cmp-topic="${esc(t.id)}">${esc(t.name)} (${cnt})</button>`;
       }),
     ].join("");
 
     const historyOptions = cmp.history.length
       ? [
-          `<option value="">🕘 历史对比报告 (${cmp.history.length})</option>`,
+          `<option value="">历史对比报告 (${cmp.history.length})</option>`,
           ...cmp.history.map(
             (h) =>
               `<option value="${esc(h.id)}" ${cmp.currentReport?.id === h.id ? "selected" : ""}>${esc(h.title)} (${h.paper_count}篇)</option>`
@@ -555,14 +554,14 @@ export function createCompareController(ctx) {
       <div class="cmp-selector-card">
         <div class="cmp-selector-head">
           <div>
-            <h2 style="margin:0 0 4px">⚖️ 同方向论文横向对比与关联分析</h2>
-            <p style="margin:0;font-size:13px;color:var(--text-muted)">选择同一研究方向下的 2 篇及以上论文，一键剖析研究思路差异、挖掘隐藏关联与互补点，并生成下一步创新切入点。</p>
+            <h2 style="margin:0 0 4px">论文对比</h2>
+            <p style="margin:0;font-size:14px;color:var(--text-muted)">选择同一方向的 2 篇及以上论文，对比研究思路、找出关联与互补点。</p>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <select id="cmpHistorySelect" class="paper-select" style="max-width:250px">${historyOptions}</select>
             ${
               cmp.currentReport?.id
-                ? `<button id="btnDeleteCmp" class="btn btn-ghost btn-sm" title="删除当前保存的对比报告">🗑️ 删除报告</button>`
+                ? `<button id="btnDeleteCmp" class="btn btn-ghost btn-sm" title="删除当前保存的对比报告">删除报告</button>`
                 : ""
             }
           </div>
@@ -586,8 +585,8 @@ export function createCompareController(ctx) {
                       <label class="cmp-paper-pick ${checked ? "selected" : ""}">
                         <input type="checkbox" data-cmp-pid="${esc(p.paper_id)}" ${checked ? "checked" : ""} />
                         <div style="min-width:0;flex:1">
-                          <div style="font-weight:700;font-size:13px;line-height:1.35;margin-bottom:3px">${esc(p.title_zh || p.title)}</div>
-                          <div style="font-size:11.5px;color:var(--text-muted)">
+                          <div style="font-weight:700;font-size:14px;line-height:1.35;margin-bottom:3px">${esc(p.title_zh || p.title)}</div>
+                          <div style="font-size:12px;color:var(--text-muted)">
                             ${p.page_count}页 · ${p.figure_count}图 · ${p.reference_count}引文 ·
                             ${p.analysis_mode === "llm_deep" ? `<span style="color:var(--teal);font-weight:600">✓ 已深度剖析</span>` : `<span>快速切图态</span>`}
                           </div>
@@ -596,16 +595,16 @@ export function createCompareController(ctx) {
                     `;
                   })
                   .join("")
-              : `<div style="font-size:13px;color:var(--text-muted);padding:10px">该课题方向下暂无足够论文，请先切换方向或从 Zotero 导入更多论文。</div>`
+              : `<div style="font-size:14px;color:var(--text-muted);padding:10px">该课题方向下暂无足够论文，请先切换方向或从 Zotero 导入更多论文。</div>`
           }
         </div>
 
         <div class="cmp-action-bar">
           <input id="cmpFocusInput" type="text" class="search-input" style="flex:1;min-width:260px" value="${esc(cmp.focusQuestion)}" placeholder="可选：输入你最想对比的问题（例如：对比它们的特征表征、数据量需求和融合创新机会）" />
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <span style="font-size:12.5px;font-weight:700;color:var(--primary)">已选 ${cmp.selectedIds.size} 篇</span>
-            <button id="btnCmpQuick" class="btn btn-secondary" ${cmp.selectedIds.size < 2 ? "disabled" : ""}>⚡ 瞬时并排对比</button>
-            <button id="btnCmpDeep" class="btn btn-primary" ${cmp.selectedIds.size < 2 ? "disabled" : ""}>✨ 用 Gemini 4 Neon 深度对比与关联挖掘</button>
+            <span style="font-size:14px;font-weight:700;color:var(--primary)">已选 ${cmp.selectedIds.size} 篇</span>
+            <button id="btnCmpQuick" class="btn btn-secondary" ${cmp.selectedIds.size < 2 ? "disabled" : ""}>并排对比</button>
+            <button id="btnCmpDeep" class="btn btn-primary" ${cmp.selectedIds.size < 2 ? "disabled" : ""}>AI 深度对比</button>
           </div>
         </div>
 
@@ -690,7 +689,7 @@ export function createCompareController(ctx) {
       btn.disabled = true;
       const pbox = $("#cmpProgressBox");
       pbox.classList.remove("hidden");
-      $("#cmpProgressMsg").textContent = "⏳ 正在启动跨文深度对比（Gemini 4 Neon）...";
+      $("#cmpProgressMsg").textContent = "正在启动 AI 深度对比…";
       $("#cmpProgressPct").textContent = "10%";
       $("#cmpProgressBar").style.width = "10%";
 
@@ -727,7 +726,7 @@ export function createCompareController(ctx) {
           }
         }, 1200);
       } catch (err) {
-        $("#cmpProgressMsg").textContent = "❌ 启动失败：" + err.message;
+        $("#cmpProgressMsg").textContent = "启动失败：" + err.message;
         btn.disabled = false;
       }
     });

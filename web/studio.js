@@ -3,12 +3,12 @@
  */
 
 const COLOR_HEX = {
-  teal: "#0f766e",
-  blue: "#2563eb",
-  amber: "#d97706",
-  purple: "#7c3aed",
-  emerald: "#059669",
-  rose: "#be123c",
+  teal: "#2a9d99",
+  blue: "#62aef0",
+  amber: "#dd5b00",
+  purple: "#d6b6f6",
+  emerald: "#1aae39",
+  rose: "#ff64c8",
 };
 
 export function createStudioController(ctx) {
@@ -90,7 +90,7 @@ export function createStudioController(ctx) {
   function populateTopicSelects() {
     const opts = [
       `<option value="">不指定课题（或自动按 Zotero 分类新建）</option>`,
-      ...studio.topics.map((t) => `<option value="${esc(t.id)}">📂 ${esc(t.name)}</option>`),
+      ...studio.topics.map((t) => `<option value="${esc(t.id)}">${esc(t.name)}</option>`),
     ].join("");
     const uSel = $("#uploadTopicSelect");
     if (uSel) {
@@ -102,7 +102,7 @@ export function createStudioController(ctx) {
     const zSel = $("#zoteroTargetTopic");
     if (zSel) {
       zSel.innerHTML = [
-        `<option value="">✨ 自动按 Zotero 分类同步课题</option>`,
+        `<option value="">自动按 Zotero 分类同步课题</option>`,
         ...studio.topics.map((t) => `<option value="${esc(t.id)}">归入：${esc(t.name)}</option>`),
       ].join("");
       if (studio.activeTopicId !== "all" && studio.activeTopicId !== "uncategorized") {
@@ -121,11 +121,11 @@ export function createStudioController(ctx) {
 
     const baseItems = `
       <button class="topic-item ${studio.activeTopicId === "all" ? "active" : ""}" data-select-topic="all">
-        <span class="topic-item-left"><span class="topic-dot" style="background:#64748b"></span><span class="topic-name-txt">全部文献</span></span>
+        <span class="topic-item-left"><span class="topic-dot" style="background:var(--text-muted)"></span><span class="topic-name-txt">全部文献</span></span>
         <span class="badge">${allPapers.length}</span>
       </button>
       <button class="topic-item droppable-topic ${studio.activeTopicId === "uncategorized" ? "active" : ""}" data-select-topic="uncategorized" data-drop-topic="uncategorized" title="拖拽文献到此可移出所有课题">
-        <span class="topic-item-left"><span class="topic-dot" style="background:#cbd5e1"></span><span class="topic-name-txt">未分类文献</span></span>
+        <span class="topic-item-left"><span class="topic-dot" style="background:var(--text-faint)"></span><span class="topic-name-txt">未分类文献</span></span>
         <span class="topic-right-actions">
           <span class="drop-hint-pill">松开移出</span>
           <span class="badge">${uncatCount}</span>
@@ -178,7 +178,7 @@ export function createStudioController(ctx) {
     }
 
     pListEl.innerHTML =
-      `<div class="sb-drag-tip">↕ 拖拽卡片到上方课题可快速归类，或点 🏷️ 改分类</div>` +
+      `<div class="sb-drag-tip">拖动卡片到上方课题即可归类，或点「分类」修改</div>` +
       papers
         .map((p) => {
           const pTopics = getPaperTopics(p.paper_id);
@@ -214,7 +214,7 @@ export function createStudioController(ctx) {
                           `;
                         })
                         .join("")
-                    : `<div style="font-size:11.5px;color:var(--text-muted);padding:4px 0">暂无课题，请先点击上方「+ 新建课题」</div>`
+                    : `<div style="font-size:12px;color:var(--text-muted);padding:4px 0">暂无课题，请先点击上方「+ 新建课题」</div>`
                 }
                 ${
                   pTopics.length
@@ -233,9 +233,9 @@ export function createStudioController(ctx) {
               </div>
               <div class="sb-paper-tags">${topicTagsHtml}</div>
               <div class="sb-paper-meta">
-                <span>${p.page_count}页 · ${p.figure_count}图 ${p.has_ppt ? "· 📽️PPT" : ""}</span>
+                <span>${p.page_count}页 · ${p.figure_count}图 ${p.has_ppt ? "· 已有 PPT" : ""}</span>
                 <div style="display:flex;align-items:center;gap:6px">
-                  <button class="sb-cat-btn ${isEditing ? "active" : ""}" data-toggle-paper-cat="${esc(p.paper_id)}" title="修改所属课题分类">🏷️ 分类</button>
+                  <button class="sb-cat-btn ${isEditing ? "active" : ""}" data-toggle-paper-cat="${esc(p.paper_id)}" title="修改所属课题分类">分类</button>
                   ${
                     curTopic
                       ? `<button class="link-btn" style="color:var(--text-muted)" data-remove-paper-topic="${esc(curTopic.id)}::${esc(p.paper_id)}" title="移出当前课题">移出</button>`
@@ -308,7 +308,7 @@ export function createStudioController(ctx) {
       `<button class="chip ${studio.zoteroColFilter === "all" ? "active" : ""}" data-zcol="all">全部分类 (${total})</button>`,
       ...cols.map(
         (c) =>
-          `<button class="chip ${String(studio.zoteroColFilter) === String(c.id) ? "active" : ""}" data-zcol="${c.id}">📁 ${esc(c.name)} (${c.pdf_count})</button>`
+          `<button class="chip ${String(studio.zoteroColFilter) === String(c.id) ? "active" : ""}" data-zcol="${c.id}">${esc(c.name)} (${c.pdf_count})</button>`
       ),
     ].join("");
   }
@@ -329,11 +329,11 @@ export function createStudioController(ctx) {
 
     const listEl = $("#zoteroItemList");
     if (!studio.zoteroLib?.available) {
-      listEl.innerHTML = `<div style="padding:16px;font-size:13px;color:var(--rose)">${esc(studio.zoteroLib?.error || "无法读取 Zotero 目录")}</div>`;
+      listEl.innerHTML = `<div style="padding:16px;font-size:14px;color:var(--rose)">${esc(studio.zoteroLib?.error || "无法读取 Zotero 目录")}</div>`;
       return;
     }
     if (!filtered.length) {
-      listEl.innerHTML = `<div style="padding:16px;font-size:13px;color:var(--text-muted)">当前筛选条件下没有本地 PDF 附件。</div>`;
+      listEl.innerHTML = `<div style="padding:16px;font-size:14px;color:var(--text-muted)">当前筛选条件下没有本地 PDF 附件。</div>`;
       updateZoteroCount();
       return;
     }
@@ -350,11 +350,11 @@ export function createStudioController(ctx) {
                 ${it.is_translated_copy ? `<span class="meta-pill" style="margin-left:6px">译文副本</span>` : ""}
               </div>
               <div class="z-item-sub">
-                ${it.authors ? `<span>👤 ${esc(it.authors)}</span>` : ""}
-                ${it.year ? `<span>📅 ${it.year}</span>` : ""}
-                ${it.journal ? `<span>📰 ${esc(it.journal)}</span>` : ""}
-                <span>📄 ${it.size_mb} MB</span>
-                ${(it.collection_names || []).map((cn) => `<span class="meta-pill accent">📁 ${esc(cn)}</span>`).join("")}
+                ${it.authors ? `<span>${esc(it.authors)}</span>` : ""}
+                ${it.year ? `<span>${it.year}</span>` : ""}
+                ${it.journal ? `<span>${esc(it.journal)}</span>` : ""}
+                <span>${it.size_mb} MB</span>
+                ${(it.collection_names || []).map((cn) => `<span class="meta-pill accent">${esc(cn)}</span>`).join("")}
               </div>
             </div>
           </label>
@@ -473,24 +473,24 @@ export function createStudioController(ctx) {
       <div class="ppt-wizard-card">
         <div class="zotero-conn-banner" style="justify-content:space-between">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span class="meta-pill accent">${installed ? "⚡ 已嵌入本机 PPT-Master 官方引擎" : "⚠️ 未检测到本机 PPT-Master（回退基础模式）"}</span>
+            <span class="meta-pill accent">${installed ? "已连接本机 PPT-Master" : "未检测到 PPT-Master，将使用内置导出"}</span>
             ${installed ? `<span class="meta-pill">目录：<code>${esc(ppt_master_dir)}</code></span>` : ""}
-            ${installed ? `<span class="meta-pill">${styles.length} 套官方风格 · ${(brands || []).length} 套品牌库 · SVG → DrawingML 原生编译</span>` : ""}
+            ${installed ? `<span class="meta-pill">${styles.length} 套风格 · ${(brands || []).length} 套品牌库</span>` : ""}
           </div>
           ${
             hasExistingDeck
-              ? `<button id="btnBackToDeck" class="btn btn-ghost btn-sm">← 返回当前 PPT-Master 工程</button>`
+              ? `<button id="btnBackToDeck" class="btn btn-ghost btn-sm">← 返回当前工程</button>`
               : ""
           }
         </div>
 
         <div>
-          <h2 style="margin:0 0 4px">📽️ PPT-Master 文献汇报制作向导</h2>
-          <p style="margin:0;font-size:13.5px;color:var(--text-muted)">全流程调用你电脑上的 <code>ppt-master</code>：自动初始化工程 → 导入文献剖析与原图 → 生成规范 1280×720 矢量 SVG → 运行 <code>svg_quality_checker</code> 质检 → <code>svg_to_pptx</code> 编译为原生可编辑 DrawingML PowerPoint，并支持内嵌官方 SVG 编辑器精修！</p>
+          <h2 style="margin:0 0 4px">文献汇报 PPT</h2>
+          <p style="margin:0;font-size:14px;color:var(--text-muted)">选好风格、听众和重点，生成可编辑的 .pptx 与逐页演讲稿。生成后可在 SVG 编辑器里继续精修。</p>
         </div>
 
         <div>
-          <div class="ppt-step-title">① 选择 PPT-Master 官方风格模板</div>
+          <div class="ppt-step-title">① 风格</div>
           <div class="ppt-style-grid">
             ${visibleStyles
               .map(
@@ -508,10 +508,10 @@ export function createStudioController(ctx) {
                   <div style="height:12px;border-radius:4px;background:${st.callout_bg};border-left:3px solid ${st.accent}"></div>
                 </div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:4px">
-                  <strong style="font-size:13px">${esc(st.name)}</strong>
+                  <strong style="font-size:14px">${esc(st.name)}</strong>
                 </div>
-                <div style="margin-bottom:4px"><span class="meta-pill" style="font-size:10.5px">${esc(st.tag)}</span></div>
-                <div style="font-size:11.5px;color:var(--text-muted);line-height:1.4">${esc((st.desc || "").slice(0, 76))}</div>
+                <div style="margin-bottom:4px"><span class="meta-pill" style="font-size:12px">${esc(st.tag)}</span></div>
+                <div style="font-size:12px;color:var(--text-muted);line-height:1.4">${esc((st.desc || "").slice(0, 76))}</div>
               </button>
             `
               )
@@ -526,7 +526,7 @@ export function createStudioController(ctx) {
               .map(
                 (aud) => `
               <button type="button" class="ppt-aud-option ${cfg.audience === aud.id ? "active" : ""}" data-ppt-aud="${esc(aud.id)}">
-                <div style="font-weight:800;font-size:13.5px;margin-bottom:4px">${esc(aud.label)}</div>
+                <div style="font-weight:800;font-size:14px;margin-bottom:4px">${esc(aud.label)}</div>
                 <div style="font-size:12px;color:var(--text-muted)">${esc(aud.hint)}</div>
               </button>
             `
@@ -565,16 +565,16 @@ export function createStudioController(ctx) {
                 )
                 .join("")}
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px;margin-bottom:10px">
               <label class="form-field">
                 <span style="font-size:12px">页面切换转场 (-t)</span>
-                <select id="pptTransitionSel" class="paper-select" style="max-width:100%">
+                <select id="pptTransitionSel" class="paper-select" style="width:100%;max-width:100%;min-width:0">
                   ${(transitions || []).map((tr) => `<option value="${esc(tr.id)}" ${cfg.transition === tr.id ? "selected" : ""}>${esc(tr.label)}</option>`).join("")}
                 </select>
               </label>
               <label class="form-field">
                 <span style="font-size:12px">对象出场动画 (-a)</span>
-                <select id="pptAnimSel" class="paper-select" style="max-width:100%">
+                <select id="pptAnimSel" class="paper-select" style="width:100%;max-width:100%;min-width:0">
                   ${(animations || []).map((an) => `<option value="${esc(an.id)}" ${cfg.animation === an.id ? "selected" : ""}>${esc(an.label)}</option>`).join("")}
                 </select>
               </label>
@@ -586,13 +586,13 @@ export function createStudioController(ctx) {
           </div>
           <div>
             <div class="ppt-step-title">⑤ 额外定制重点（可选）</div>
-            <textarea id="pptCustomNote" rows="4" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text);font-family:var(--font-sans);font-size:13px" placeholder="例如：重点讲清楚 13-mer 外膜匹配机制、MAD5.1 与 MAD2.2 的权衡，以及对我们课题组的启发...">${esc(cfg.custom_note)}</textarea>
+            <textarea id="pptCustomNote" rows="4" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface-alt);color:var(--text);font-family:var(--font-sans);font-size:14px" placeholder="例如：重点讲清楚 13-mer 外膜匹配机制、MAD5.1 与 MAD2.2 的权衡，以及对我们课题组的启发...">${esc(cfg.custom_note)}</textarea>
           </div>
         </div>
 
         <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;border-top:1px solid var(--border);padding-top:16px">
-          <span id="pptGenStatus" style="font-size:13px;color:var(--text-muted)"></span>
-          <button id="btnGeneratePpt" class="btn btn-primary" style="padding:10px 22px;font-size:14.5px">⚡ 按 PPT-Master 流程生成 SVG 与 PPTX</button>
+          <span id="pptGenStatus" style="font-size:14px;color:var(--text-muted)"></span>
+          <button id="btnGeneratePpt" class="btn btn-primary" style="padding:10px 22px;font-size:15px">生成汇报 PPT</button>
         </div>
       </div>
     `;
@@ -639,7 +639,7 @@ export function createStudioController(ctx) {
     $("#btnGeneratePpt").addEventListener("click", async (e) => {
       const btn = e.currentTarget;
       btn.disabled = true;
-      $("#pptGenStatus").textContent = "⏳ 正在执行 PPT-Master 全流程（初始化工程 → 生成 1280×720 SVG → 拆分演讲稿 → 质量检查 → DrawingML 编译）...";
+      $("#pptGenStatus").textContent = "正在生成：初始化工程 → 生成幻灯片 → 拆分演讲稿 → 质量检查 → 编译 .pptx…";
       try {
         const res = await apiJson(
           `/api/papers/${encodeURIComponent(state.currentPaperId)}/ppt/generate`,
@@ -659,7 +659,7 @@ export function createStudioController(ctx) {
         renderTopicsSidebar();
         renderPptTab();
       } catch (err) {
-        $("#pptGenStatus").textContent = "❌ 生成失败：" + err.message;
+        $("#pptGenStatus").textContent = "生成失败：" + err.message;
         btn.disabled = false;
       }
     });
@@ -804,14 +804,14 @@ export function createStudioController(ctx) {
         pm
           ? `<div class="zotero-conn-banner" style="justify-content:space-between;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                <span class="meta-pill accent">⚡ PPT-Master 真实工程</span>
-                <span class="meta-pill">${pm.checker_rc === 0 ? `✅ SVG 质检通过 (${qsum?.errors ?? 0} Errors)` : `⚠️ 质检返回码 ${pm.checker_rc}`}</span>
-                <span class="meta-pill">${pm.export_rc === 0 ? "✅ DrawingML .pptx 已就绪" : "⚠️ 导出待重试"}</span>
-                <span class="meta-pill" title="${esc(pm.project_path)}">📁 ${esc(pm.project_name)}</span>
+                <span class="meta-pill accent">PPT-Master 工程</span>
+                <span class="meta-pill">${pm.checker_rc === 0 ? `SVG 质检通过 (${qsum?.errors ?? 0} Errors)` : `质检返回码 ${pm.checker_rc}`}</span>
+                <span class="meta-pill">${pm.export_rc === 0 ? "DrawingML .pptx 已就绪" : "导出待重试"}</span>
+                <span class="meta-pill" title="${esc(pm.project_path)}">${esc(pm.project_name)}</span>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <button id="btnLaunchSvgEditor" class="btn btn-secondary btn-sm">🎨 打开 PPT-Master 官方 SVG 编辑器</button>
-                <button id="btnRecompilePm" class="btn btn-ghost btn-sm" title="若在官方 SVG 编辑器做了拖拽修改，点此重新质检并编译 .pptx">🔄 重新质检编译</button>
+                <button id="btnLaunchSvgEditor" class="btn btn-secondary btn-sm">在 SVG 编辑器中精修</button>
+                <button id="btnRecompilePm" class="btn btn-ghost btn-sm" title="若在官方 SVG 编辑器做了拖拽修改，点此重新质检并编译 .pptx">重新质检编译</button>
               </div>
             </div>`
           : ""
@@ -819,18 +819,18 @@ export function createStudioController(ctx) {
 
       <div class="ppt-workbench-bar">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <strong style="font-size:14.5px">📽️ PPT-Master 工作台</strong>
+          <strong style="font-size:15px">PPT-Master 工作台</strong>
           <select id="pptQuickStyle" class="paper-select" style="max-width:210px" title="一键实时换肤并重编 SVG">
-            ${styles.map((st) => `<option value="${esc(st.id)}" ${deck.style_id === st.id ? "selected" : ""}>🎨 ${esc(st.name)}</option>`).join("")}
+            ${styles.map((st) => `<option value="${esc(st.id)}" ${deck.style_id === st.id ? "selected" : ""}>${esc(st.name)}</option>`).join("")}
           </select>
           <button id="btnPptAddSlide" class="btn btn-ghost btn-sm">＋ 新增一页</button>
-          <button id="btnPptReconfig" class="btn btn-ghost btn-sm">🎛️ 重配前置条件</button>
+          <button id="btnPptReconfig" class="btn btn-ghost btn-sm">重配前置条件</button>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <span id="pptSaveIndicator" style="font-size:12px;color:var(--teal)">${pm ? "✓ 当前预览为 PPT-Master 原生矢量 SVG" : ""}</span>
-          <button id="btnPptPresent" class="btn btn-secondary btn-sm">▶️ 全屏放映</button>
-          <button id="btnPptSave" class="btn btn-ghost btn-sm">💾 保存并重编 SVG/PPTX</button>
-          <button id="btnPptDownload" class="btn btn-primary btn-sm">📥 导出 PPT-Master 原生 .pptx</button>
+          <button id="btnPptPresent" class="btn btn-secondary btn-sm">全屏放映</button>
+          <button id="btnPptSave" class="btn btn-ghost btn-sm">保存并重编 SVG/PPTX</button>
+          <button id="btnPptDownload" class="btn btn-primary btn-sm">下载 .pptx</button>
         </div>
       </div>
 
@@ -849,7 +849,7 @@ export function createStudioController(ctx) {
                 </div>
               </div>
               <div class="ppt-thumb-title">${esc(s.title || "未命名页面")}</div>
-              ${s.figure_id ? `<span class="meta-pill accent" style="font-size:10px;margin-top:4px;display:inline-block">🖼️ ${esc(s.figure_id)}</span>` : ""}
+              ${s.figure_id ? `<span class="meta-pill accent" style="font-size:12px;margin-top:4px;display:inline-block">${esc(s.figure_id)}</span>` : ""}
             </div>
           `
             )
@@ -861,17 +861,17 @@ export function createStudioController(ctx) {
             ${renderRealSvgOrFallback(cur, studio.activeSlideIdx, slides.length, deck.style_id, !studio.dirtySlide)}
           </div>
           <div class="ppt-notes-preview">
-            <strong style="color:var(--teal);font-size:12px">🎙️ 当前页演讲者备注（已同步至 <code>notes/total.md</code> 并由 <code>total_md_split.py</code> 写入 .pptx）：</strong>
+            <strong style="color:var(--teal);font-size:12px">当前页演讲者备注（已同步至 <code>notes/total.md</code> 并由 <code>total_md_split.py</code> 写入 .pptx）：</strong>
             <div id="pptNotesPreviewTxt" style="margin-top:4px;color:var(--text-muted)">${esc(cur.speaker_notes || "可在右侧编辑该页口语演讲稿...")}</div>
           </div>
           ${
             pm?.steps_log?.length
               ? `<details class="fig-caption-details">
-                  <summary>🛠️ 查看 PPT-Master 官方管线执行日志（${pm.steps_log.length} 步）</summary>
+                  <summary>查看 PPT-Master 官方管线执行日志（${pm.steps_log.length} 步）</summary>
                   ${pm.steps_log
                     .map(
                       (st) => `<div style="margin-top:8px">
-                        <strong>${st.rc === 0 ? "✅" : "⚠️"} ${esc(st.step)} (rc=${st.rc})</strong>
+                        <strong>${st.rc === 0 ? "" : ""} ${esc(st.step)} (rc=${st.rc})</strong>
                         <pre class="readme-pre" style="max-height:110px;margin-top:4px">${esc(st.output || "")}</pre>
                       </div>`
                     )
@@ -882,7 +882,7 @@ export function createStudioController(ctx) {
         </div>
 
         <div class="ppt-editor-col">
-          <strong style="font-size:14px">✏️ 编辑第 ${studio.activeSlideIdx + 1} 页内容</strong>
+          <strong style="font-size:14px">编辑第 ${studio.activeSlideIdx + 1} 页内容</strong>
           <label>
             版式布局
             <select id="edLayout">
@@ -916,7 +916,7 @@ export function createStudioController(ctx) {
               ${figs
                 .map(
                   (f) =>
-                    `<option value="${esc(f.id)}" ${cur.figure_id === f.id ? "selected" : ""}>🖼️ ${esc(f.label)} (P${f.page})</option>`
+                    `<option value="${esc(f.id)}" ${cur.figure_id === f.id ? "selected" : ""}>${esc(f.label)} (P${f.page})</option>`
                 )
                 .join("")}
             </select>
@@ -953,7 +953,7 @@ export function createStudioController(ctx) {
     requestAnimationFrame(scaleSlideFrames);
 
     const persistDeck = async (silent = false) => {
-      if (!silent) $("#pptSaveIndicator").textContent = "⏳ 正在重编 PPT-Master SVG、质检并更新 .pptx...";
+      if (!silent) $("#pptSaveIndicator").textContent = "正在重新编译并更新 .pptx…";
       const res = await apiJson(`/api/papers/${encodeURIComponent(state.currentPaperId)}/ppt`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -970,7 +970,7 @@ export function createStudioController(ctx) {
       const btn = e.currentTarget;
       btn.disabled = true;
       const orig = btn.textContent;
-      btn.textContent = "⏳ 正在启动官方 SVG 编辑器...";
+      btn.textContent = "正在启动 SVG 编辑器…";
       try {
         const info = await apiJson(
           `/api/papers/${encodeURIComponent(state.currentPaperId)}/ppt/launch-editor`,
@@ -988,7 +988,7 @@ export function createStudioController(ctx) {
     });
 
     const triggerRecompile = async () => {
-      $("#pptSaveIndicator").textContent = "⏳ 正在对当前 svg_output/ 重新质检并编译 .pptx...";
+      $("#pptSaveIndicator").textContent = "正在重新质检并编译 .pptx…";
       const res = await apiJson(
         `/api/papers/${encodeURIComponent(state.currentPaperId)}/ppt/recompile`,
         { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }
@@ -1247,7 +1247,7 @@ export function createStudioController(ctx) {
           showSidebarToast(`✓ 已移入课题「${tObj?.name || targetTopicId}」`);
         }
       } catch (err) {
-        showSidebarToast(`❌ 移动失败：${err.message}`);
+        showSidebarToast(`移动失败：${err.message}`);
       }
     });
 
@@ -1328,7 +1328,7 @@ export function createStudioController(ctx) {
         const tObj = studio.topics.find((t) => t.id === tid);
         showSidebarToast(cb.checked ? `✓ 已加入「${tObj?.name || tid}」` : `✓ 已移出「${tObj?.name || tid}」`);
       } catch (err) {
-        showSidebarToast(`❌ 更新分类失败：${err.message}`);
+        showSidebarToast(`更新分类失败：${err.message}`);
       }
     });
 
@@ -1378,7 +1378,7 @@ export function createStudioController(ctx) {
 
     $("#btnProbeZoteroMcp")?.addEventListener("click", async () => {
       const cmd = $("#zoteroMcpCmdInput").value.trim();
-      $("#zoteroMcpResult").textContent = "⏳ 正在执行 MCP JSON-RPC 握手...";
+      $("#zoteroMcpResult").textContent = "正在连接 Zotero MCP…";
       try {
         if (cmd) {
           await apiJson("/api/config", {
@@ -1393,12 +1393,12 @@ export function createStudioController(ctx) {
           body: JSON.stringify({ command: cmd }),
         });
         $("#zoteroMcpResult").textContent =
-          (res.connected ? "✅ " : "ℹ️ ") +
+          (res.connected ? "" : "提示：") +
           res.message +
           (res.tools?.length ? `（工具：${res.tools.slice(0, 8).join(", ")}）` : "");
         refreshZoteroStatus();
       } catch (err) {
-        $("#zoteroMcpResult").textContent = "❌ 探测失败：" + err.message;
+        $("#zoteroMcpResult").textContent = "探测失败：" + err.message;
       }
     });
 
@@ -1406,7 +1406,7 @@ export function createStudioController(ctx) {
     $("#btnRecompileAfterEdit")?.addEventListener("click", async (e) => {
       const btn = e.currentTarget;
       btn.disabled = true;
-      btn.textContent = "⏳ 质检与编译中...";
+      btn.textContent = "质检与编译中…";
       try {
         const res = await apiJson(
           `/api/papers/${encodeURIComponent(state.currentPaperId)}/ppt/recompile`,
@@ -1421,7 +1421,7 @@ export function createStudioController(ctx) {
         alert("重新编译失败：" + err.message);
       } finally {
         btn.disabled = false;
-        btn.textContent = "🔄 重新质检并编译 .pptx";
+        btn.textContent = "重新质检并编译 .pptx";
       }
     });
 
