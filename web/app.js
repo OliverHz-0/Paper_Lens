@@ -77,6 +77,8 @@ async function init() {
     const preferred =
       state.papers.find((p) => p.paper_id === "limits-2025") || state.papers[0];
     await loadPaper(preferred.paper_id);
+  } else {
+    renderEmptyWorkspace();
   }
   window.addEventListener("resize", () => requestAnimationFrame(drawMindMapLines));
   const topbarEl = document.querySelector(".topbar");
@@ -105,6 +107,9 @@ async function refreshPaperList() {
 }
 
 async function loadPaper(paperId) {
+  document.body.classList.remove("no-paper");
+  $("#paperHero").classList.remove("is-empty");
+  $("#btnExport").disabled = false;
   state.currentPaperId = paperId;
   $("#paperSelect").value = paperId;
   state.bundle = await apiJson(`/api/papers/${encodeURIComponent(paperId)}`);
@@ -135,37 +140,74 @@ async function loadPaper(paperId) {
   studioCtrl?.onPaperLoaded();
 }
 
+/* ---------- Empty workspace (first run) ---------- */
+function renderEmptyWorkspace() {
+  document.body.classList.add("no-paper");
+  $("#btnExport").disabled = true;
+  $("#paperHero").classList.add("is-empty");
+  $("#paperSelect").innerHTML = `<option value="">尚未导入论文</option>`;
+  $("#paperHero").innerHTML = `
+    <div class="empty-hero">
+      <h1>导入第一篇论文</h1>
+      <p>上传一篇 PDF，或从 Zotero 批量导入。PaperLens 会按双栏版面逐段切图、裁出图表、提取参考文献；配置好模型后还会生成六大维度解读、思维导图和逐段中文翻译。</p>
+      <div class="empty-actions">
+        <button type="button" class="btn btn-primary" data-empty-action="upload">
+          <svg class="ic"><use href="#i-upload"/></svg>上传 PDF
+        </button>
+        <button type="button" class="btn btn-ghost" data-empty-action="zotero">
+          <svg class="ic"><use href="#i-library"/></svg>从 Zotero 导入
+        </button>
+      </div>
+      <p class="empty-note">没有配置模型也能使用切图、图表与引文溯源。模型可稍后在 <button type="button" class="link-btn" data-empty-action="settings">设置</button> 中添加。</p>
+    </div>`;
+  $$("[data-empty-action]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      const act = btn.dataset.emptyAction;
+      if (act === "upload") $("#btnUpload").click();
+      else if (act === "zotero") $("#btnZoteroTop").click();
+      else $("#btnSettings").click();
+    })
+  );
+}
+
 /* ---------- Hero ---------- */
 function renderHero() {
   const { manifest: m, analysis: a } = state.bundle;
   const isFallback = a.mode !== "llm_deep";
-  const modeLabel = isFallback ? "⚡ 快速结构化切图模式（待 AI 深度解剖）" : "✨ AI 零基础深度解剖";
+  const modeLabel = isFallback ? "待 AI 解读" : "AI 已解读";
   $("#paperHero").innerHTML = `
     <div class="hero-top-meta">
-      <span class="meta-pill accent">${modeLabel}</span>
-      <span class="meta-pill">📄 ${m.page_count} 页</span>
-      <span class="meta-pill">📑 ${m.slice_count} 段英中双语切片</span>
-      <span class="meta-pill">🖼️ ${m.figure_count} 张精读图表</span>
-      <span class="meta-pill">📚 ${m.reference_count} 篇参考文献（点击实时溯源）</span>
-      ${
-        m.doi
-          ? `<a class="meta-pill" href="https://doi.org/${esc(m.doi)}" target="_blank" style="text-decoration:none;color:var(--primary)">DOI: ${esc(m.doi)} ↗</a>`
-          : ""
-      }
-      <a class="meta-pill" href="${assetUrl("source.pdf")}" target="_blank" style="text-decoration:none;color:var(--teal)">查看原始 PDF ↗</a>
+      <span class="status-tag ${isFallback ? "is-pending" : "is-done"}">${modeLabel}</span>
+      <span class="meta-line">
+        <span>${m.page_count} 页</span>
+        <span>${m.slice_count} 段切片</span>
+        <span>${m.figure_count} 张图表</span>
+        <span>${m.reference_count} 篇参考文献</span>
+      </span>
+      <span class="meta-links">
+        ${
+          m.doi
+            ? `<a class="meta-link" href="https://doi.org/${esc(m.doi)}" target="_blank" rel="noopener">DOI ${esc(m.doi)} ↗</a>`
+            : ""
+        }
+        <a class="meta-link" href="${assetUrl("source.pdf")}" target="_blank" rel="noopener">原始 PDF ↗</a>
+      </span>
     </div>
     <h1 class="hero-title-zh">${esc(a.paper_title_zh || m.title)}</h1>
     <p class="hero-title-en">${esc(m.title)}</p>
     ${m.authors ? `<p class="hero-authors">${esc(m.authors)}</p>` : ""}
     ${
       isFallback
-        ? `<div class="hero-tldr" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-            <div><strong>⚡ 已完成切图与引文提取！</strong>点击右侧按钮，直接调用本机 <code>Antigravity · Gemini 4 Neon</code> 自动生成六大维度、全局思维导图、逐句中文翻译、零基础大白话与术语库：</div>
-            <button id="btnHeroAnalyzeNow" class="btn btn-primary">✨ 立即用 Gemini 4 Neon 深度解剖本篇</button>
+        ? `<div class="hero-callout hero-pending">
+            <div>
+              <span class="callout-label">切图与引文提取已完成</span>
+              <p>运行 AI 解读后，这里会生成六大维度、思维导图、逐段中文翻译、大白话类比与术语库。</p>
+            </div>
+            <button id="btnHeroAnalyzeNow" class="btn btn-primary">运行 AI 解读</button>
           </div>
           <div id="heroAnalyzeProgress" class="progress-box hidden" style="margin-bottom:12px">
             <div class="progress-head">
-              <span id="heroAnalyzeMsg">正在启动 Antigravity CLI (Gemini 4 Neon)...</span>
+              <span id="heroAnalyzeMsg">正在启动 AI 解读…</span>
               <strong id="heroAnalyzePct">10%</strong>
             </div>
             <div class="progress-track">
@@ -176,12 +218,12 @@ function renderHero() {
     }
     ${
       !isFallback && a.one_sentence_tldr
-        ? `<div class="hero-tldr"><strong>📌 一句话速览：</strong>${esc(a.one_sentence_tldr)}</div>`
+        ? `<div class="hero-callout hero-tldr"><span class="callout-label">一句话速览</span><p>${esc(a.one_sentence_tldr)}</p></div>`
         : ""
     }
     ${
       !isFallback && a.beginner_hook
-        ? `<div class="hero-beginner-hook beginner-only"><strong>🎓 零基础 30 秒听懂这篇论文：</strong>${esc(a.beginner_hook)}</div>`
+        ? `<div class="hero-callout hero-beginner-hook beginner-only"><span class="callout-label">30 秒听懂（大白话）</span><p>${esc(a.beginner_hook)}</p></div>`
         : ""
     }
   `;
@@ -189,7 +231,7 @@ function renderHero() {
   $("#btnHeroAnalyzeNow")?.addEventListener("click", async (e) => {
     const btn = e.currentTarget;
     btn.disabled = true;
-    btn.textContent = "⏳ 深度解剖中...";
+    btn.textContent = "解读中…";
     const pbox = $("#heroAnalyzeProgress");
     pbox?.classList.remove("hidden");
     try {
@@ -211,6 +253,7 @@ function renderHero() {
             clearInterval(timer);
             btn.disabled = false;
             btn.textContent = "重试 AI 解读";
+            $("#heroAnalyzeMsg").textContent = `解读失败：${job.message || "未知错误"}。请检查设置中的模型配置后重试。`;
           }
         } catch {
           clearInterval(timer);
@@ -280,10 +323,10 @@ function renderMindMapHtml() {
     const isFig = leaf.target_type === "figure";
     const isDim = leaf.target_type === "dimension";
     const tagText = isFig
-      ? `🖼️ ${leaf.target_id.toUpperCase()}`
+      ? `${leaf.target_id.toUpperCase()}`
       : isDim
-      ? `🧭 维度`
-      : `📄 ${leaf.target_id}`;
+      ? `维度`
+      : `${leaf.target_id}`;
     const dataAttr = isFig
       ? `data-jump-figure="${esc(leaf.target_id)}" data-from-mindmap="1"`
       : isDim
@@ -318,14 +361,14 @@ function renderMindMapHtml() {
     <div id="mindmapCard" class="mindmap-card">
       <div class="mindmap-header">
         <div>
-          <h2>🗺️ 论文全局思维导图（点击任意节点直达原文段落或图表）</h2>
-          <p class="mindmap-sub">左侧：问题提出与方法构建 → 中心主旨 → 右侧：验证体系、核心结果与机理创新</p>
+          <h2>论文全局思维导图</h2>
+          <p class="mindmap-sub">点击任意节点跳到对应原文段落或图表。左侧是问题与方法，右侧是验证、结果与机理。</p>
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
           <button id="mmZoomOut" class="btn btn-ghost btn-sm" title="缩小">－</button>
           <button id="mmZoomReset" class="btn btn-ghost btn-sm" title="重置缩放">100%</button>
           <button id="mmZoomIn" class="btn btn-ghost btn-sm" title="放大">＋</button>
-          <button id="mmFullscreen" class="btn btn-secondary btn-sm">⛶ 全屏大地图</button>
+          <button id="mmFullscreen" class="btn btn-secondary btn-sm">全屏大地图</button>
         </div>
       </div>
       <div id="mindmapViewport" class="mindmap-viewport">
@@ -336,7 +379,6 @@ function renderMindMapHtml() {
           </div>
           <div class="mm-center-wrap">
             <div id="mmRootNode" class="mm-root">
-              <span class="mm-root-badge">PAPER MIND MAP</span>
               <h3>${esc(mm.root?.title || "")}</h3>
               <p>${esc(mm.root?.subtitle || "")}</p>
             </div>
@@ -357,12 +399,12 @@ function drawMindMapLines() {
   if (!canvas || !svg || !rootEl) return;
 
   const colorMap = {
-    amber: "#d97706",
-    blue: "#2563eb",
-    teal: "#0f766e",
-    indigo: "#4f46e5",
-    emerald: "#059669",
-    purple: "#7c3aed",
+    amber: "#dd5b00",
+    blue: "#62aef0",
+    teal: "#2a9d99",
+    indigo: "#d6b6f6",
+    emerald: "#1aae39",
+    purple: "#ff64c8",
   };
 
   // Compute coordinates in unscaled canvas space
@@ -432,7 +474,7 @@ function renderDockedMindMap() {
   if (toggleBtn) {
     toggleBtn.classList.toggle("btn-primary", state.mindmapDocked);
     toggleBtn.classList.toggle("btn-secondary", !state.mindmapDocked);
-    toggleBtn.textContent = state.mindmapDocked ? "🗺️ 导图分栏 (开)" : "🗺️ 导图分栏";
+    toggleBtn.textContent = state.mindmapDocked ? "导图分栏 (开)" : "导图分栏";
   }
 
   const mm = getMindMapData();
@@ -440,7 +482,7 @@ function renderDockedMindMap() {
 
   pane.innerHTML = `
     <div class="dmm-head">
-      <strong>🗺️ 论文思维导图导航</strong>
+      <strong>论文思维导图导航</strong>
       <div style="display:flex;gap:6px;align-items:center">
         <button id="btnBackToFullMindmap" class="btn btn-ghost btn-xs" title="返回六大维度大地图">大地图</button>
         <button id="btnCloseDockedMindmap" class="icon-close" style="width:24px;height:24px;font-size:12px" title="收起左侧导图">✕</button>
@@ -457,7 +499,7 @@ function renderDockedMindMap() {
         <div class="dmm-branch mm-${esc(b.color)}">
           <button class="dmm-branch-title" data-jump-dim="${esc(b.dim_key || "")}" title="点击返回该维度总览">
             <span>${esc(b.title)}</span>
-            <span style="font-size:11px;opacity:0.75">↗</span>
+            <span style="font-size:12px;opacity:0.75">↗</span>
           </button>
           <div class="dmm-children">
             ${(b.children || [])
@@ -467,10 +509,10 @@ function renderDockedMindMap() {
                 const key = `${leaf.target_type}:${leaf.target_id}`;
                 const isActive = state.activeMindmapTarget === key;
                 const tagText = isFig
-                  ? `🖼️ ${leaf.target_id.toUpperCase()}`
+                  ? `${leaf.target_id.toUpperCase()}`
                   : isDim
-                  ? `🧭 维度`
-                  : `📄 ${leaf.target_id}`;
+                  ? `维度`
+                  : `${leaf.target_id}`;
                 const dataAttr = isFig
                   ? `data-jump-figure="${esc(leaf.target_id)}" data-from-mindmap="1"`
                   : isDim
@@ -527,7 +569,7 @@ function renderOverview() {
     ? `
     <div class="workflow-card">
       <h2 class="section-heading">
-        <span>⚡ 五步速通论文实验路线</span>
+        <span>五步速通论文实验路线</span>
         <button class="btn btn-secondary btn-sm" id="btnJumpSlices">进入从头到尾逐段双语 + 图解精读 →</button>
       </h2>
       <div class="workflow-grid">
@@ -556,7 +598,7 @@ function renderOverview() {
           const note = figNotes[fid] || {};
           return `
             <div class="fig-box">
-              <img src="${assetUrl(f.image)}" alt="${esc(f.label)}" class="zoomable" data-caption="${esc(f.label + " (P" + f.page + "): " + f.caption)}" />
+              <img loading="lazy" src="${assetUrl(f.image)}" alt="${esc(f.label)}" class="zoomable" data-caption="${esc(f.label + " (P" + f.page + "): " + f.caption)}" />
               <div class="fig-meta">
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
                   <strong>${esc(note.title_zh || f.label + " (P" + f.page + ")")}</strong>
@@ -565,7 +607,7 @@ function renderOverview() {
                 <div>${esc(note.plain_summary || f.caption.slice(0, 140))}</div>
                 ${
                   note.how_to_read
-                    ? `<div class="fig-guide beginner-only"><strong>👀 零基础看图指南：</strong>${esc(note.how_to_read)}</div>`
+                    ? `<div class="fig-guide beginner-only"><strong>零基础看图指南：</strong>${esc(note.how_to_read)}</div>`
                     : ""
                 }
               </div>
@@ -577,7 +619,7 @@ function renderOverview() {
       const sliceLinks = (dim.slice_ids || [])
         .map(
           (sid) =>
-            `<button class="jump-pill" data-jump-slice="${esc(sid)}">📄 原文切片 ${esc(sid)}</button>`
+            `<button class="jump-pill" data-jump-slice="${esc(sid)}">原文切片 ${esc(sid)}</button>`
         )
         .join("");
 
@@ -593,7 +635,7 @@ function renderOverview() {
           <p class="dim-summary">${esc(dim.summary || "")}</p>
           ${
             dim.beginner_analogy
-              ? `<div class="analogy-box beginner-only"><span class="box-tag">💡 大白话类比：</span>${esc(dim.beginner_analogy)}</div>`
+              ? `<div class="analogy-box beginner-only"><span class="box-tag">大白话类比：</span>${esc(dim.beginner_analogy)}</div>`
               : ""
           }
           ${
@@ -611,7 +653,7 @@ function renderOverview() {
   const criticalHtml = (a.critical_notes || []).length
     ? `
       <div class="critical-card">
-        <h3>🔎 批判性审读：局限性、未验证之处与细节核查</h3>
+        <h3>批判性审读：局限性、未验证之处与细节核查</h3>
         <ul>${a.critical_notes.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>
       </div>
     `
@@ -635,7 +677,7 @@ function renderOverview() {
   $("#mmFullscreen")?.addEventListener("click", (e) => {
     const card = $("#mindmapCard");
     const isFs = card.classList.toggle("is-fullscreen");
-    e.currentTarget.textContent = isFs ? "✕ 退出全屏" : "⛶ 全屏大地图";
+    e.currentTarget.textContent = isFs ? "退出全屏" : "全屏大地图";
     requestAnimationFrame(drawMindMapLines);
   });
 
@@ -662,7 +704,7 @@ function renderSliceFilters() {
   }
   const defs = [
     ["all", "全部（段落+图表）"],
-    ["figures", "🖼️ 仅看图表精读"],
+    ["figures", "仅看图表精读"],
     ["abstract", "摘要 Abstract"],
     ["introduction", "引言背景 Intro"],
     ["methods", "研究方法 Methods"],
@@ -689,27 +731,27 @@ function renderFigureReadingCard(fig, note) {
     <article class="fig-reading-card" id="figcard-${esc(fig.id)}">
       <div class="fig-reading-head">
         <div class="fig-reading-head-left">
-          <span class="fig-badge">🖼️ ${esc(fig.label)} · P${fig.page}</span>
-          <strong style="font-size:15.5px">${esc(note.title_zh || fig.label)}</strong>
+          <span class="fig-badge">${esc(fig.label)} · P${fig.page}</span>
+          <strong style="font-size:16px">${esc(note.title_zh || fig.label)}</strong>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          ${relSlices.map((sid) => `<button class="jump-pill" data-jump-slice="${esc(sid)}">📄 ${esc(sid)}</button>`).join("")}
+          ${relSlices.map((sid) => `<button class="jump-pill" data-jump-slice="${esc(sid)}">${esc(sid)}</button>`).join("")}
         </div>
       </div>
       <div class="fig-reading-body">
         <div class="fig-reading-img-stage">
-          <img src="${assetUrl(fig.image)}" alt="${esc(fig.label)}" class="zoomable" data-caption="${esc(fig.label + " (P" + fig.page + "): " + fig.caption)}" />
+          <img loading="lazy" src="${assetUrl(fig.image)}" alt="${esc(fig.label)}" class="zoomable" data-caption="${esc(fig.label + " (P" + fig.page + "): " + fig.caption)}" />
         </div>
 
         <div class="fig-reading-grid">
           <div class="fig-info-box summary-box">
-            <span class="block-label" style="color:var(--primary)">🎯 一句话看懂这张图</span>
+            <span class="block-label" style="color:var(--primary)">一句话看懂这张图</span>
             <div>${esc(note.plain_summary || fig.caption.slice(0, 200))}</div>
           </div>
           ${
             note.how_to_read
               ? `<div class="fig-info-box guide-box beginner-only">
-                  <span class="block-label" style="color:var(--amber)">👀 零基础看图指南</span>
+                  <span class="block-label" style="color:var(--amber)">零基础看图指南</span>
                   <div>${esc(note.how_to_read)}</div>
                 </div>`
               : ""
@@ -719,7 +761,7 @@ function renderFigureReadingCard(fig, note) {
         ${
           subpanels.length
             ? `<div>
-                <div style="font-size:13px;font-weight:800;color:var(--text-muted);margin-bottom:8px">🔍 逐子图 / 逐区块精细拆解</div>
+                <div style="font-size:14px;font-weight:800;color:var(--text-muted);margin-bottom:8px">逐子图 / 逐区块精细拆解</div>
                 <div class="subpanel-grid">
                   ${subpanels
                     .map(
@@ -739,14 +781,14 @@ function renderFigureReadingCard(fig, note) {
         ${
           note.context_connection
             ? `<div class="fig-info-box conn-box">
-                <span class="block-label" style="color:var(--teal)">🔗 与上下文及前后图表的逻辑联系</span>
+                <span class="block-label" style="color:var(--teal)">与上下文及前后图表的逻辑联系</span>
                 <div>${esc(note.context_connection)}</div>
               </div>`
             : ""
         }
 
         <details class="fig-caption-details">
-          <summary>📖 展开完整图注（英中对照）</summary>
+          <summary>展开完整图注（英中对照）</summary>
           ${note.caption_zh ? `<div class="cap-zh"><strong>中文图注：</strong>${esc(note.caption_zh)}</div>` : ""}
           <div class="cap-en"><strong>Original Caption:</strong> ${esc(fig.caption)}</div>
         </details>
@@ -826,13 +868,13 @@ function renderSlices() {
         const fn = figNotes[fid] || {};
         return `
           <div class="linked-fig-mini">
-            <img src="${assetUrl(f.image)}" alt="${esc(f.label)}" class="zoomable" data-caption="${esc(f.label + " (P" + f.page + "): " + f.caption)}" />
+            <img loading="lazy" src="${assetUrl(f.image)}" alt="${esc(f.label)}" class="zoomable" data-caption="${esc(f.label + " (P" + f.page + "): " + f.caption)}" />
             <div class="linked-fig-summary">
-              <strong>🖼️ 关联图表 · ${esc(fn.title_zh || f.label)}：</strong>${esc(fn.plain_summary || f.caption.slice(0, 120))}
+              <strong>关联图表 · ${esc(fn.title_zh || f.label)}：</strong>${esc(fn.plain_summary || f.caption.slice(0, 120))}
             </div>
             <div class="linked-fig-footer">
-              <span style="font-size:11.5px;color:var(--text-muted)">本段直接引用了该图作为证据</span>
-              <button class="jump-pill" data-jump-figure="${esc(fid)}">🔎 展开逐子图精读与因果联系 →</button>
+              <span style="font-size:12px;color:var(--text-muted)">本段直接引用了该图作为证据</span>
+              <button class="jump-pill" data-jump-figure="${esc(fid)}">展开逐子图精读与因果联系 →</button>
             </div>
           </div>
         `;
@@ -842,7 +884,7 @@ function renderSlices() {
     const refsHtml = (s.refs || [])
       .map(
         (r) =>
-          `<button class="ref-pill" data-trace-ref="${r}" title="点击实时溯源第 ${r} 条参考文献">📚 Ref ${r}</button>`
+          `<button class="ref-pill" data-trace-ref="${r}" title="点击实时溯源第 ${r} 条参考文献">Ref ${r}</button>`
       )
       .join("");
 
@@ -850,7 +892,7 @@ function renderSlices() {
       .filter((t) => glossary[t])
       .map(
         (t) =>
-          `<button class="term-pill" data-open-term="${esc(t)}" title="点击查看零基础术语科普">💡 ${esc(t)}</button>`
+          `<button class="term-pill" data-open-term="${esc(t)}" title="点击查看零基础术语科普">${esc(t)}</button>`
       )
       .join("");
 
@@ -871,7 +913,7 @@ function renderSlices() {
             ${
               showImg
                 ? `<div class="slice-img-wrap">
-                    <img src="${assetUrl(s.image)}" alt="${esc(s.id)} 原文截图" loading="lazy" class="zoomable" data-caption="${esc(s.id + " 原文截图 (Page " + s.page + ")")}" />
+                    <img loading="lazy" src="${assetUrl(s.image)}" alt="${esc(s.id)} 原文截图" class="zoomable" data-caption="${esc(s.id + " 原文截图 (Page " + s.page + ")")}" />
                   </div>`
                 : ""
             }
@@ -897,11 +939,11 @@ function renderSlices() {
           </div>
           <div class="slice-analysis">
             <div class="analysis-block role-block">
-              <span class="block-label">🎯 这段文字的作用解析</span>
+              <span class="block-label">这段文字的作用解析</span>
               <div>${esc(note.role || "正文切片段落。")}</div>
             </div>
             <div class="analysis-block plain-block beginner-only">
-              <span class="block-label">💬 零基础大白话翻译</span>
+              <span class="block-label">零基础大白话翻译</span>
               <div>${esc(note.plain_explanation || "")}</div>
             </div>
             ${
@@ -946,8 +988,8 @@ function renderGlossary() {
   $("#tab-glossary").innerHTML = `
     <div class="glossary-header">
       <div>
-        <h2 style="margin:0 0 4px">💡 零基础跨学科术语速查库</h2>
-        <p style="margin:0;font-size:13.5px;color:var(--text-muted)">专为非生物/非本专业读者准备：每个晦涩词汇配「大白话 + 生活类比 + 在本文中的作用」。</p>
+        <h2 style="margin:0 0 4px">零基础跨学科术语速查库</h2>
+        <p style="margin:0;font-size:14px;color:var(--text-muted)">专为非生物/非本专业读者准备：每个晦涩词汇配「大白话 + 生活类比 + 在本文中的作用」。</p>
       </div>
       <input id="glossarySearch" type="search" class="search-input" value="${esc(state.glossaryQuery)}" placeholder="搜索术语（如 MIC、SI、破膜、PCA...）" />
     </div>
@@ -963,8 +1005,8 @@ function renderGlossary() {
                 <span>${esc(v.zh || "")}</span>
               </div>
               <p class="term-simple">${esc(v.simple || "")}</p>
-              ${v.analogy ? `<div class="term-analogy"><strong>🧠 生活类比：</strong>${esc(v.analogy)}</div>` : ""}
-              ${v.in_paper ? `<p class="term-in-paper"><strong>📌 在本文中：</strong>${esc(v.in_paper)}</p>` : ""}
+              ${v.analogy ? `<div class="term-analogy"><strong>生活类比：</strong>${esc(v.analogy)}</div>` : ""}
+              ${v.in_paper ? `<p class="term-in-paper"><strong>在本文中：</strong>${esc(v.in_paper)}</p>` : ""}
             </div>
           `
               )
@@ -990,15 +1032,15 @@ function renderResources() {
       (g) => `
       <div class="res-card">
         <h3>
-          <span>🐙 GitHub 开源代码与数据集</span>
+          <span>GitHub 开源代码与数据集</span>
           <a href="${esc(g.url)}" target="_blank" class="btn btn-primary btn-sm">打开仓库 ↗</a>
         </h3>
         <p style="margin:0 0 8px;font-weight:700">${esc(g.repo)} ${g.language ? `<span class="meta-pill">${esc(g.language)}</span>` : ""}</p>
-        <p style="margin:0 0 10px;font-size:13.5px;color:var(--text-muted)">${esc(g.description || "已从论文正文自动识别开源仓库。")}</p>
+        <p style="margin:0 0 10px;font-size:14px;color:var(--text-muted)">${esc(g.description || "已从论文正文自动识别开源仓库。")}</p>
         ${
           (g.files || []).length
             ? `<div style="font-size:12px;font-weight:700;color:var(--text-muted)">仓库核心文件结构：</div>
-               <div class="file-list">${g.files.map((f) => `<a class="file-chip" href="${esc(f.html_url || g.url)}" target="_blank">📄 ${esc(f.name)}</a>`).join("")}</div>`
+               <div class="file-list">${g.files.map((f) => `<a class="file-chip" href="${esc(f.html_url || g.url)}" target="_blank">${esc(f.name)}</a>`).join("")}</div>`
             : ""
         }
         ${g.readme_excerpt ? `<pre class="readme-pre">${esc(g.readme_excerpt)}</pre>` : ""}
@@ -1011,14 +1053,14 @@ function renderResources() {
     ? `
       <div class="res-card">
         <h3>
-          <span>📎 补充材料 (Supporting Information)</span>
+          <span>补充材料 (Supporting Information)</span>
           ${
             r.supporting_info.url
               ? `<a href="${esc(r.supporting_info.url)}" target="_blank" class="btn btn-secondary btn-sm">直达 SI 页面 ↗</a>`
               : ""
           }
         </h3>
-        <p style="white-space:pre-line;font-size:13.5px;margin:0 0 12px">${esc(r.supporting_info.note || "")}</p>
+        <p style="white-space:pre-line;font-size:14px;margin:0 0 12px">${esc(r.supporting_info.note || "")}</p>
         ${
           r.doi_meta
             ? `<div class="trace-meta-row">
@@ -1035,17 +1077,17 @@ function renderResources() {
   const toolsCard = (r.web_tools || []).length
     ? `
       <div class="res-card">
-        <h3><span>🛠️ 文中自动发现的数据库与在线工具</span></h3>
+        <h3><span>文中自动发现的数据库与在线工具</span></h3>
         <div style="display:flex;flex-direction:column;gap:10px">
           ${r.web_tools
             .map(
               (t) => `
-            <div style="padding:10px 12px;background:var(--surface-alt);border-radius:10px;border:1px solid var(--border)">
+            <div style="padding:10px 12px;background:var(--surface-alt);border-radius:8px;border:1px solid var(--border)">
               <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
                 <strong style="font-size:14px">${esc(t.name)}</strong>
                 <a href="${esc(t.url)}" target="_blank" class="btn btn-ghost btn-sm">访问 ↗</a>
               </div>
-              ${t.desc ? `<p style="margin:4px 0 0;font-size:12.5px;color:var(--text-muted)">${esc(t.desc)}</p>` : ""}
+              ${t.desc ? `<p style="margin:4px 0 0;font-size:14px;color:var(--text-muted)">${esc(t.desc)}</p>` : ""}
             </div>
           `
             )
@@ -1065,7 +1107,7 @@ function renderResources() {
             ${esc(ref.raw)}
             ${
               cached?.why_cited
-                ? `<div style="margin-top:5px;font-size:12.5px;color:var(--teal)"><strong>✓ 已深度溯源：</strong>${esc(cached.why_cited)}</div>`
+                ? `<div style="margin-top:5px;font-size:14px;color:var(--teal)"><strong>已深度溯源：</strong>${esc(cached.why_cited)}</div>`
                 : ""
             }
           </div>
@@ -1078,18 +1120,18 @@ function renderResources() {
   $("#tab-resources").innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div>
-        <h2 style="margin:0 0 4px">🔗 自动抓取的关联代码仓、SI 与工具</h2>
-        <p style="margin:0;font-size:13.5px;color:var(--text-muted)">解析 PDF 时自动提取文中所有 GitHub、DOI、Supporting Information 与生物信息工具链接。</p>
+        <h2 style="margin:0 0 4px">自动抓取的关联代码仓、SI 与工具</h2>
+        <p style="margin:0;font-size:14px;color:var(--text-muted)">解析 PDF 时自动提取文中所有 GitHub、DOI、Supporting Information 与生物信息工具链接。</p>
       </div>
-      <button id="btnRefetchResources" class="btn btn-secondary">🔄 重新在线抓取资源</button>
+      <button id="btnRefetchResources" class="btn btn-secondary">重新在线抓取资源</button>
     </div>
     <div class="res-grid">
-      ${ghCards || `<div class="res-card"><h3>🐙 GitHub 仓库</h3><p style="color:var(--text-muted)">本文未检测到 GitHub URL。</p></div>`}
+      ${ghCards || `<div class="res-card"><h3>GitHub 仓库</h3><p style="color:var(--text-muted)">本文未检测到 GitHub URL。</p></div>`}
       ${siCard}
       ${toolsCard}
     </div>
     <div style="margin-top:26px">
-      <h2 style="margin:0 0 12px">📚 全文参考文献列表（共 ${m.references?.length || 0} 篇 · 点击任意一篇实时展开溯源）</h2>
+      <h2 style="margin:0 0 12px">全文参考文献列表（共 ${m.references?.length || 0} 篇 · 点击任意一篇实时展开溯源）</h2>
       <div class="ref-index-list">${refsListHtml}</div>
     </div>
   `;
@@ -1097,7 +1139,7 @@ function renderResources() {
   $("#btnRefetchResources").addEventListener("click", async (e) => {
     const btn = e.currentTarget;
     btn.disabled = true;
-    btn.textContent = "⏳ 正在联网抓取...";
+    btn.textContent = "正在联网抓取…";
     try {
       const fresh = await apiJson(
         `/api/papers/${encodeURIComponent(state.currentPaperId)}/fetch-resources`,
@@ -1115,7 +1157,7 @@ function renderResources() {
 
 /* ---------- Real-Time Citation Tracer Drawer ---------- */
 async function openRefTracer(refNum, force = false) {
-  openDrawer(`📚 实时引文溯源 · [Ref ${refNum}]`, `<p style="color:var(--text-muted)">⏳ 正在向 Crossref / Europe PMC / Semantic Scholar 实时溯源 [Ref ${refNum}]...</p>`);
+  openDrawer(`实时引文溯源 · [Ref ${refNum}]`, `<p style="color:var(--text-muted)">正在从 Crossref / Europe PMC / Semantic Scholar 查询 [Ref ${refNum}]…</p>`);
   try {
     const url = `/api/papers/${encodeURIComponent(state.currentPaperId)}/trace-ref/${refNum}${force ? "?force=1" : ""}`;
     const data = await apiJson(url);
@@ -1125,40 +1167,40 @@ async function openRefTracer(refNum, force = false) {
       ? data.citing_slices
           .map(
             (cs) => `
-          <div style="padding:9px 11px;background:var(--surface-alt);border-radius:10px;border:1px solid var(--border);margin-bottom:8px">
+          <div style="padding:9px 11px;background:var(--surface-alt);border-radius:8px;border:1px solid var(--border);margin-bottom:8px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-              <strong style="font-size:12.5px">${esc(cs.id)} · P${cs.page} (${esc(cs.section_label)})</strong>
+              <strong style="font-size:14px">${esc(cs.id)} · P${cs.page} (${esc(cs.section_label)})</strong>
               <button class="jump-pill" data-jump-slice="${esc(cs.id)}">跳转段落 →</button>
             </div>
-            <div style="font-size:12.5px;color:var(--text-muted)">${esc(cs.excerpt)}</div>
+            <div style="font-size:14px;color:var(--text-muted)">${esc(cs.excerpt)}</div>
           </div>
         `
           )
           .join("")
-      : `<p style="font-size:13px;color:var(--text-muted)">文中以区间或上标方式间接引用了该文献。</p>`;
+      : `<p style="font-size:14px;color:var(--text-muted)">文中以区间或上标方式间接引用了该文献。</p>`;
 
     $("#drawerBody").innerHTML = `
       <div class="trace-section">
         <div class="trace-title">${esc(data.title || "未提取到标题")}</div>
-        <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px">${esc(data.authors || "")}</div>
+        <div style="font-size:14px;color:var(--text-muted);margin-bottom:10px">${esc(data.authors || "")}</div>
         <div class="trace-meta-row">
           ${data.venue ? `<span class="meta-pill accent">${esc(data.venue)}</span>` : ""}
           ${data.year ? `<span class="meta-pill">${data.year}</span>` : ""}
-          ${data.citation_count != null ? `<span class="meta-pill">🔥 被引 ${data.citation_count} 次</span>` : ""}
+          ${data.citation_count != null ? `<span class="meta-pill">被引 ${data.citation_count} 次</span>` : ""}
           ${data.source ? `<span class="meta-pill">来源：${esc(data.source)}</span>` : ""}
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           ${data.url ? `<a href="${esc(data.url)}" target="_blank" class="btn btn-primary btn-sm">打开原文 DOI ↗</a>` : ""}
           ${data.open_access_pdf ? `<a href="${esc(data.open_access_pdf)}" target="_blank" class="btn btn-secondary btn-sm">免费 OA PDF ↗</a>` : ""}
           ${data.scholar_search_url ? `<a href="${esc(data.scholar_search_url)}" target="_blank" class="btn btn-ghost btn-sm">Google Scholar ↗</a>` : ""}
-          <button class="btn btn-ghost btn-sm" id="btnForceTrace">🔄 强制在线刷新</button>
+          <button class="btn btn-ghost btn-sm" id="btnForceTrace">强制在线刷新</button>
         </div>
       </div>
 
       ${
         data.why_cited
           ? `<div class="trace-section">
-              <h4>🎯 本文为何在这里引用这篇文献？</h4>
+              <h4>本文为何在这里引用这篇文献？</h4>
               <div class="analysis-block role-block">${esc(data.why_cited)}</div>
             </div>`
           : ""
@@ -1167,7 +1209,7 @@ async function openRefTracer(refNum, force = false) {
       ${
         data.plain_summary
           ? `<div class="trace-section">
-              <h4>💡 零基础大白话速览</h4>
+              <h4>零基础大白话速览</h4>
               <div class="analysis-block plain-block">${esc(data.plain_summary)}</div>
             </div>`
           : ""
@@ -1176,20 +1218,20 @@ async function openRefTracer(refNum, force = false) {
       ${
         data.abstract
           ? `<div class="trace-section">
-              <h4>📄 实时抓取的引文摘要 (Abstract)</h4>
+              <h4>实时抓取的引文摘要 (Abstract)</h4>
               <div class="trace-abstract">${esc(data.abstract)}</div>
             </div>`
           : ""
       }
 
       <div class="trace-section">
-        <h4>📍 在本文中的引用上下文</h4>
+        <h4>在本文中的引用上下文</h4>
         ${citingHtml}
       </div>
 
       <div class="trace-section">
-        <h4>📑 原始参考文献条目</h4>
-        <div class="trace-abstract" style="font-size:12.5px">${esc(data.raw || "")}</div>
+        <h4>原始参考文献条目</h4>
+        <div class="trace-abstract" style="font-size:14px">${esc(data.raw || "")}</div>
       </div>
     `;
 
@@ -1203,26 +1245,26 @@ function openTermDrawer(termKey) {
   const v = state.bundle.analysis?.glossary?.[termKey];
   if (!v) return;
   openDrawer(
-    `💡 术语大白话 · ${termKey}`,
+    `术语大白话 · ${termKey}`,
     `
       <div class="trace-section">
         <div class="trace-title">${esc(termKey)}</div>
         <div style="font-size:14px;color:var(--teal);font-weight:600;margin-bottom:14px">${esc(v.zh || "")}</div>
         <div class="analysis-block plain-block" style="margin-bottom:12px">
-          <span class="block-label">🗣️ 零基础一句话解释</span>
+          <span class="block-label">零基础一句话解释</span>
           <div>${esc(v.simple || "")}</div>
         </div>
         ${
           v.analogy
             ? `<div class="analysis-block role-block" style="margin-bottom:12px">
-                <span class="block-label">🧠 生活化类比</span>
+                <span class="block-label">生活化类比</span>
                 <div>${esc(v.analogy)}</div>
               </div>`
             : ""
         }
         ${
           v.in_paper
-            ? `<div class="trace-abstract"><strong>📌 在这篇论文中的作用：</strong>${esc(v.in_paper)}</div>`
+            ? `<div class="trace-abstract"><strong>在这篇论文中的作用：</strong>${esc(v.in_paper)}</div>`
             : ""
         }
       </div>
@@ -1248,14 +1290,18 @@ function exitMindMapFullscreen() {
   if (card && card.classList.contains("is-fullscreen")) {
     card.classList.remove("is-fullscreen");
     const btn = $("#mmFullscreen");
-    if (btn) btn.textContent = "⛶ 全屏大地图";
+    if (btn) btn.textContent = "全屏大地图";
   }
 }
 
 function switchTab(tabName) {
   exitMindMapFullscreen();
   state.activeTab = tabName;
-  $$(".nav-tab").forEach((b) => b.classList.toggle("active", b.dataset.tab === tabName));
+  $$(".nav-tab").forEach((b) => {
+    const on = b.dataset.tab === tabName;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-selected", on ? "true" : "false");
+  });
   $$(".tab-panel").forEach((p) => p.classList.toggle("active", p.id === `tab-${tabName}`));
   $("#paperHero")?.classList.toggle("hidden", tabName === "compare");
   if (tabName === "overview") {
@@ -1406,6 +1452,36 @@ async function openSettings() {
 
 /* ---------- Event Binding ---------- */
 function bindEvents() {
+  const moreBtn = $("#btnMoreActions");
+  const moreMenu = $("#secondaryActions");
+  const setMore = (open) => {
+    moreMenu.classList.toggle("open", open);
+    moreBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  };
+  moreBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    setMore(!moreMenu.classList.contains("open"));
+  });
+  moreMenu.addEventListener("click", () => setMore(false));
+  document.addEventListener("click", (e) => {
+    if (!moreMenu.contains(e.target)) setMore(false);
+  });
+
+  const narrow = window.matchMedia("(max-width: 1020px)");
+  if (narrow.matches) $("#workspaceShell").classList.add("sidebar-collapsed");
+  $("#sidebarScrim").addEventListener("click", () =>
+    $("#workspaceShell").classList.add("sidebar-collapsed")
+  );
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const openModal = $$(".modal-backdrop").find((m) => !m.classList.contains("hidden"));
+    if (openModal) openModal.classList.add("hidden");
+    else if (!$("#sideDrawer").classList.contains("hidden")) closeDrawer();
+    else if (narrow.matches) $("#workspaceShell").classList.add("sidebar-collapsed");
+    setMore(false);
+  });
+
   $$(".nav-tab").forEach((btn) =>
     btn.addEventListener("click", () => switchTab(btn.dataset.tab))
   );
@@ -1554,7 +1630,7 @@ function bindEvents() {
     const btn = e.currentTarget;
     const toast = $("#settingsToast");
     toast.classList.remove("hidden");
-    toast.textContent = "⏳ 正在发送真实测试请求验证连通性...";
+    toast.textContent = "正在测试连接…";
     btn.disabled = true;
     try {
       const res = await apiJson("/api/llm/test", {
@@ -1569,12 +1645,12 @@ function bindEvents() {
         }),
       });
       if (res.ok) {
-        toast.textContent = `✅ 连接成功！引擎：${res.provider || "HTTP"} · 模型：${res.model} · 耗时 ${res.latency_ms} ms · 返回：${res.reply}`;
+        toast.textContent = `连接成功！引擎：${res.provider || "HTTP"} · 模型：${res.model} · 耗时 ${res.latency_ms} ms · 返回：${res.reply}`;
       } else {
-        toast.textContent = `❌ 连接失败：${res.error}`;
+        toast.textContent = `连接失败：${res.error}`;
       }
     } catch (err) {
-      toast.textContent = "❌ 测试异常：" + err.message;
+      toast.textContent = "测试异常：" + err.message;
     } finally {
       btn.disabled = false;
     }
@@ -1598,10 +1674,10 @@ function bindEvents() {
           http_proxy: $("#cfgProxy").value.trim(),
         }),
       });
-      toast.textContent = "✅ 配置已保存到 ~/.paperlens/config.json";
+      toast.textContent = "配置已保存到 ~/.paperlens/config.json";
       toast.classList.remove("hidden");
     } catch (err) {
-      toast.textContent = "❌ 保存失败：" + err.message;
+      toast.textContent = "保存失败：" + err.message;
       toast.classList.remove("hidden");
     }
   });
@@ -1610,7 +1686,7 @@ function bindEvents() {
     if (!state.currentPaperId) return;
     const toast = $("#settingsToast");
     toast.classList.remove("hidden");
-    toast.textContent = "⏳ 正在后台调用大模型重新深度解剖当前论文...";
+    toast.textContent = "正在后台运行 AI 解读…";
     try {
       const { job_id } = await apiJson(
         `/api/papers/${encodeURIComponent(state.currentPaperId)}/analyze`,
@@ -1627,7 +1703,7 @@ function bindEvents() {
         }
       }, 900);
     } catch (err) {
-      toast.textContent = "❌ 启动失败：" + err.message;
+      toast.textContent = "启动失败：" + err.message;
     }
   });
 }
