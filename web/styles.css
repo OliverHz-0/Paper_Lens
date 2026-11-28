@@ -329,7 +329,7 @@ h4 {
 }
 
 .topbar .paper-select {
-  width: 200px;
+  width: 168px;
 }
 
 .nav-tabs {
@@ -352,14 +352,14 @@ h4 {
   border: none;
   background: transparent;
   color: var(--text-muted);
-  padding: 0 9px;
+  padding: 0 8px;
   font-family: inherit;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   white-space: nowrap;
   transition: color 0.15s ease;
 }
@@ -367,8 +367,8 @@ h4 {
 .nav-tab::after {
   content: "";
   position: absolute;
-  left: 9px;
-  right: 9px;
+  left: 8px;
+  right: 8px;
   bottom: -1px;
   height: 2px;
   border-radius: 2px 2px 0 0;
@@ -4477,4 +4477,485 @@ textarea:focus {
   .search-input {
     width: 100%;
   }
+}
+
+
+/* ==================== Wet-Lab Protocol Handbook ==================== */
+.wl-toolbar-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.wl-toolbar-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.wl-toolbar-head h2 {
+  margin: 0 0 4px;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
+
+.wl-toolbar-head p {
+  margin: 0;
+  font-size: 13.5px;
+  max-width: 680px;
+}
+
+.wl-export-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wl-action-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wl-muted {
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+
+.wl-empty-card {
+  text-align: center;
+  padding: 36px 24px;
+}
+
+.wl-empty-card h3 {
+  margin: 0 0 6px;
+}
+
+.wl-empty-card p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.wl-well {
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wl-well-accent {
+  background: var(--primary-soft);
+  color: var(--text);
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.wl-well-warm {
+  background: var(--amber-bg);
+  color: var(--text);
+  border: 1px solid color-mix(in srgb, var(--amber-border) 35%, transparent);
+}
+
+.wl-well-error {
+  background: var(--rose-bg);
+  color: var(--rose);
+  border: 1px solid color-mix(in srgb, var(--rose) 28%, transparent);
+}
+
+.wl-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.wl-scan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wl-scan-row {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+
+.wl-scan-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.wl-scan-row-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13.5px;
+}
+
+.wl-scan-excerpt {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.wl-param-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.wl-param-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--primary-soft);
+  color: var(--primary-on-soft, var(--primary));
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.wl-anchor-wrap {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.wl-anchor-chip {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  padding: 2px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.14s, background 0.14s;
+}
+
+.wl-anchor-chip:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.wl-doc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.wl-doc-title {
+  margin: 8px 0 0;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+.wl-doc-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.wl-safety-box {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+}
+
+.wl-safety-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13.5px;
+}
+
+.wl-bullet-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.wl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.wl-table th,
+.wl-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.wl-table th {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--surface-alt);
+}
+
+.wl-row-done td {
+  opacity: 0.58;
+}
+
+.wl-row-done td:nth-child(3) {
+  text-decoration: line-through;
+}
+
+.wl-protos-section {
+  margin-bottom: 16px;
+}
+
+.wl-proto-card {
+  margin-bottom: 14px;
+}
+
+.wl-proto-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.wl-proto-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wl-proto-title-wrap h4 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: -0.015em;
+}
+
+.wl-proto-id {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 9px;
+  border-radius: 6px;
+  background: var(--primary-fill, var(--primary));
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.wl-proto-obj {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.wl-ctrl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+  margin: 12px 0 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+}
+
+.wl-ctrl-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.wl-ctrl-grid span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.wl-ctrl-grid strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.wl-steps-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wl-step-item {
+  padding: 11px 13px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: background 0.14s, opacity 0.14s;
+}
+
+.wl-step-item.done {
+  background: var(--surface-alt);
+  opacity: 0.65;
+}
+
+.wl-step-item.done .wl-step-action {
+  text-decoration: line-through;
+}
+
+.wl-step-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.wl-step-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  cursor: pointer;
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.wl-step-check input {
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.wl-step-num {
+  font-weight: 700;
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  white-space: nowrap;
+  padding-top: 2px;
+}
+
+.wl-step-sub {
+  margin: 6px 0 0 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.wl-tip-inline {
+  font-size: 12.5px;
+  color: var(--amber);
+}
+
+.wl-proto-foot {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.wl-si-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wl-si-list li label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  cursor: pointer;
+}
+
+.wl-si-list li.done span {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.wl-sug-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.wl-sug-card {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+
+.wl-sug-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.wl-step-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--primary-fill, var(--primary));
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.wl-sug-line {
+  margin: 0 0 6px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
 }

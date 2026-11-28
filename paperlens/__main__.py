@@ -14,6 +14,7 @@ from .pdf_parser import ingest_pdf
 from .ref_tracer import trace_reference
 from .resource_fetcher import fetch_all_resources
 from .server import _slugify, run_server
+from .wetlab_extractor import export_wetlab_html, export_wetlab_markdown, extract_wetlab_protocol
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -45,6 +46,12 @@ def main(argv: list[str] | None = None) -> int:
     p_exp = sub.add_parser("export-md", help="导出带原文截图与大白话解析的 Markdown 报告")
     p_exp.add_argument("paper_id")
     p_exp.add_argument("-o", "--output", type=Path, default=None)
+
+    p_wl = sub.add_parser("extract-wetlab", help="单独提取论文湿实验部分并生成可导出说明书 (MD/HTML)")
+    p_wl.add_argument("paper_id")
+    p_wl.add_argument("--focus", default="", help="可选：重点细化的湿实验环节")
+    p_wl.add_argument("--format", choices=["md", "html"], default="md")
+    p_wl.add_argument("-o", "--output", type=Path, default=None)
 
     args = parser.parse_args(argv)
 
@@ -98,6 +105,25 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Exported to {args.output}")
         else:
             print(md)
+        return 0
+
+    if args.cmd == "extract-wetlab":
+        pdir = DATA_DIR / args.paper_id
+        proto = extract_wetlab_protocol(
+            pdir,
+            focus_note=args.focus,
+            progress_cb=lambda p, m: print(f"[{p:3d}%] {m}", file=sys.stderr),
+        )
+        out_text = (
+            export_wetlab_html(pdir, proto)
+            if args.format == "html"
+            else export_wetlab_markdown(pdir, proto)
+        )
+        if args.output:
+            args.output.write_text(out_text, encoding="utf-8")
+            print(f"Exported wet-lab handbook to {args.output}")
+        else:
+            print(out_text)
         return 0
 
     return 0

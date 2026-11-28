@@ -1,5 +1,6 @@
 import { createStudioController } from "/studio.js";
 import { createCompareController } from "/compare.js";
+import { createWetlabController } from "/wetlab.js";
 
 const state = {
   papers: [],
@@ -40,6 +41,7 @@ async function apiJson(url, opts = {}) {
 
 let studioCtrl = null;
 let compareCtrl = null;
+let wetlabCtrl = null;
 
 /* ---------- Boot ---------- */
 async function init() {
@@ -70,6 +72,14 @@ async function init() {
     loadPaper,
     switchTab,
     getTopics: () => studioCtrl?.getTopics() || [],
+  });
+  wetlabCtrl = createWetlabController({
+    state,
+    $,
+    esc,
+    apiJson,
+    jumpToSlice,
+    jumpToFigure,
   });
   await refreshPaperList();
   await studioCtrl.initStudio();
@@ -138,6 +148,7 @@ async function loadPaper(paperId) {
   renderGlossary();
   renderResources();
   studioCtrl?.onPaperLoaded();
+  wetlabCtrl?.onPaperLoaded();
 }
 
 /* ---------- Empty workspace (first run) ---------- */
@@ -1306,6 +1317,8 @@ function switchTab(tabName) {
   $("#paperHero")?.classList.toggle("hidden", tabName === "compare");
   if (tabName === "overview") {
     requestAnimationFrame(drawMindMapLines);
+  } else if (tabName === "wetlab") {
+    wetlabCtrl?.openWetlabTab();
   } else if (tabName === "compare") {
     compareCtrl?.openCompareTab();
   } else if (tabName === "ppt") {

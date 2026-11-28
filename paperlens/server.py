@@ -51,6 +51,13 @@ from .topics import (
     set_paper_topics,
     update_topic,
 )
+from .wetlab_extractor import (
+    export_wetlab_html,
+    export_wetlab_markdown,
+    extract_wetlab_protocol,
+    load_wetlab_protocol,
+    scan_wetlab_candidates,
+)
 from .zotero_bridge import (
     get_zotero_status,
     lookup_zotero_pdf,
@@ -331,6 +338,27 @@ def _run_analyze_job(job_id: str, paper_id: str) -> None:
         _set_job(job_id, status="error", progress=100, message=f"AI 解读失败：{exc}")
 
 
+def _run_wetlab_job(job_id: str, paper_id: str, focus_note: str = "") -> None:
+    try:
+        pdir = DATA_DIR / paper_id
+        protocol = extract_wetlab_protocol(
+            pdir,
+            focus_note=focus_note,
+            progress_cb=lambda pct, msg: _set_job(job_id, status="running", progress=pct, message=msg),
+        )
+        _set_job(
+            job_id,
+            status="done",
+            progress=100,
+            paper_id=paper_id,
+            has_wetlab=protocol.get("has_wetlab", True),
+            message="湿实验操作说明书已提炼完成！",
+        )
+    except Exception as exc:
+        traceback.print_exc()
+        _set_job(job_id, status="error", progress=100, message=f"湿实验提取失败：{exc}")
+
+
 def _run_compare_job(
     job_id: str, paper_ids: list[str], topic_name: str, focus_question: str
 ) -> None:
@@ -546,6 +574,51 @@ class PaperLensHandler(BaseHTTPRequestHandler):
                 return
             traced = trace_reference(pdir, rnum, force=force)
             self._send_json(traced)
+            return
+
+        m_wetlab_md = re.match(r"^/api/papers/([a-zA-Z0-9_-]+)/wetlab/export-md$", path)
+        if m_wetlab_md:
+            pid = m_wetlab_md.group(1)
+            pdir = DATA_DIR / pid
+            if not (pdir / "manifest.json").exists():
+                self._send_json({"error": "Paper not found"}, status=404)
+                return
+            try:
+                md = export_wetlab_markdown(pdir)
+                self._send_bytes(md.encode("utf-8"), "text/markdown; charset=utf-8", filename=f"{pid}-wetlab-protocol.md")
+            except Exception as exc:
+                self._send_json({"error": str(exc)}, status=404)
+            return
+
+        m_wetlab_html = re.match(r"^/api/papers/([a-zA-Z0-9_-]+)/wetlab/export-html$", path)
+        if m_wetlab_html:
+            pid = m_wetlab_html.group(1)
+            pdir = DATA_DIR / pid
+            if not (pdir / "manifest.json").exists():
+                self._send_json({"error": "Paper not found"}, status=404)
+                return
+            download = qs.get("download", ["0"])[0] in ("1", "true", "yes")
+            try:
+                html_str = export_wetlab_html(pdir)
+                fname = f"{pid}-wetlab-protocol.html" if download else None
+                self._send_bytes(html_str.encode("utf-8"), "text/html; charset=utf-8", filename=fname)
+            except Exception as exc:
+                self._send_json({"error": str(exc)}, status=404)
+            return
+
+        m_wetlab = re.match(r"^/api/papers/([a-zA-Z0-9_-]+)/wetlab$", path)
+        if m_wetlab:
+            pid = m_wetlab.group(1)
+            pdir = DATA_DIR / pid
+            if not (pdir / "manifest.json").exists():
+                self._send_json({"error": "Paper not found"}, status=404)
+                return
+            self._send_json(
+                {
+                    "protocol": load_wetlab_protocol(pdir),
+                    "scan": scan_wetlab_candidates(pdir),
+                }
+            )
             return
 
         m_export = re.match(r"^/api/papers/([a-zA-Z0-9_-]+)/export-md$", path)
@@ -765,6 +838,20 @@ class PaperLensHandler(BaseHTTPRequestHandler):
                 return
             res = fetch_all_resources(pdir, force=True)
             self._send_json(res)
+            return
+
+        m_wetlab_ext = re.match(r"^/api/papers/([a-zA-Z0-9_-]+)/wetlab/extract$", path)
+        if m_wetlab_ext:
+            pid = m_wetlab_ext.group(1)
+            pdir = DATA_DIR / pid
+            if not (pdir / "manifest.json").exists():
+                self._send_json({"error": "Paper not found"}, status=404)
+                return
+            job_id = uuid.uuid4().hex[:12]
+            focus_note = str(payload.get("focus_note") or "")
+            _set_job(job_id, status="queued", progress=8, paper_id=pid, message="准备扫描论文并提炼湿实验说明书...")
+            threading.Thread(target=_run_wetlab_job, args=(job_id, pid, focus_note), daemon=True).start()
+            self._send_json({"job_id": job_id, "paper_id": pid}, status=HTTPStatus.ACCEPTED)
             return
 
         m_analyze = re.match(r"^/api/papers/([a-zA-Z0-9_-]+)/analyze$", path)
